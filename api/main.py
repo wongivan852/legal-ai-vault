@@ -14,7 +14,9 @@ import sys
 import os
 
 from services.ollama_service import OllamaService
-from database import init_db
+from services.rag_service import RAGService
+from database import init_db, get_db
+from qdrant_client import QdrantClient
 
 # Configure logging
 logging.basicConfig(
@@ -48,6 +50,11 @@ app.add_middleware(
 # Initialize services
 ollama_service = OllamaService()
 
+# Initialize Qdrant client
+qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+qdrant_client = QdrantClient(host=qdrant_host, port=qdrant_port)
+
 
 # Pydantic models
 class GenerateRequest(BaseModel):
@@ -64,6 +71,13 @@ class EmbedRequest(BaseModel):
 class SetModelRequest(BaseModel):
     model_name: str
     model_type: str = "llm"  # "llm" or "embedding"
+
+
+class RAGRequest(BaseModel):
+    question: str
+    top_k: int = 5
+    search_type: str = "sections"  # "documents" or "sections"
+    min_score: float = 0.5
 
 
 # Startup event
@@ -192,6 +206,54 @@ async def generate_embedding(request: EmbedRequest):
 
     except Exception as e:
         logger.error(f"Embedding error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# RAG endpoint
+@app.post("/api/rag")
+async def rag_query(request: RAGRequest):
+    """
+    RAG (Retrieval Augmented Generation) - Ask questions about HK law
+
+    This endpoint:
+    1. Searches the vector database for relevant legal documents/sections
+    2. Retrieves the most relevant context
+    3. Generates an answer using the LLM grounded in actual legal text
+
+    Example:
+    ```
+    curl -X POST http://localhost:8000/api/rag \
+      -H "Content-Type: application/json" \
+      -d '{
+        "question": "What are the requirements for insurance in minor work construction?",
+        "top_k": 5,
+        "search_type": "sections"
+      }'
+    ```
+    """
+    try:
+        # Get database session
+        db = next(get_db())
+
+        # Create RAG service instance
+        rag_service = RAGService(
+            db_session=db,
+            qdrant_client=qdrant_client,
+            ollama_service=ollama_service
+        )
+
+        # Perform RAG query
+        result = await rag_service.query(
+            question=request.question,
+            top_k=request.top_k,
+            search_type=request.search_type,
+            min_score=request.min_score
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"RAG query error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

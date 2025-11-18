@@ -25,14 +25,77 @@
         <main class="main-content">
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" data-tab="generate">Text Generation</button>
+                <button class="tab-btn active" data-tab="rag">Legal RAG</button>
+                <button class="tab-btn" data-tab="generate">Text Generation</button>
                 <button class="tab-btn" data-tab="embed">Embeddings</button>
                 <button class="tab-btn" data-tab="models">Models</button>
                 <button class="tab-btn" data-tab="docs">Documentation</button>
             </div>
 
+            <!-- Tab Content: Legal RAG -->
+            <div class="tab-content active" id="rag-tab">
+                <div class="panel">
+                    <h2>🔍 Legal RAG - Ask Questions About HK Law</h2>
+                    <p class="panel-desc">Ask questions and get answers grounded in actual Hong Kong legal documents</p>
+
+                    <form id="ragForm" class="form">
+                        <div class="form-group">
+                            <label for="ragQuestion">Legal Question *</label>
+                            <textarea
+                                id="ragQuestion"
+                                class="textarea-field"
+                                rows="4"
+                                required
+                                placeholder="Example: What are the requirements for insurance in minor work construction under Building Management Ordinance?"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ragTopK">Number of Sources</label>
+                                <input
+                                    type="number"
+                                    id="ragTopK"
+                                    class="input-field"
+                                    value="5"
+                                    min="1"
+                                    max="10"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ragSearchType">Search Type</label>
+                                <select id="ragSearchType" class="input-field">
+                                    <option value="sections">Sections (Granular)</option>
+                                    <option value="documents">Documents (Broad)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="ragBtn">
+                                <span class="btn-text">🔍 Search & Answer</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="spinner"></span> Searching legal database...
+                                </span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearRag">Clear</button>
+                        </div>
+                    </form>
+
+                    <div id="ragResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3>⚖️ Legal Answer</h3>
+                            <div class="result-meta" id="ragMeta"></div>
+                        </div>
+                        <div class="result-content" id="ragAnswer"></div>
+                        <div class="result-sources" id="ragSources"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab Content: Text Generation -->
-            <div class="tab-content active" id="generate-tab">
+            <div class="tab-content" id="generate-tab">
                 <div class="panel">
                     <h2>AI Legal Analysis</h2>
                     <p class="panel-desc">Ask legal questions and get AI-powered responses using your local LLM</p>

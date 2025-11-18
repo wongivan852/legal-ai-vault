@@ -56,6 +56,16 @@ function initializeForms() {
         document.getElementById('embedResult').style.display = 'none';
     });
 
+    // RAG Form
+    const ragForm = document.getElementById('ragForm');
+    const clearRagBtn = document.getElementById('clearRag');
+
+    ragForm.addEventListener('submit', handleRAG);
+    clearRagBtn.addEventListener('click', () => {
+        ragForm.reset();
+        document.getElementById('ragResult').style.display = 'none';
+    });
+
     // Models
     document.getElementById('refreshModels').addEventListener('click', loadModels);
 }
@@ -260,6 +270,108 @@ function displayEmbedResult(data) {
     const preview = data.embedding.slice(0, 50);
     const previewText = `[\n  ${preview.map(v => v.toFixed(6)).join(',\n  ')}\n  ... (${data.embedding.length - 50} more values)\n]`;
     embedPreview.textContent = previewText;
+
+    resultPanel.style.display = 'block';
+    resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// RAG - Retrieval Augmented Generation
+async function handleRAG(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('ragBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('ragResult');
+
+    // Get form values
+    const question = document.getElementById('ragQuestion').value;
+    const topK = parseInt(document.getElementById('ragTopK').value);
+    const searchType = document.getElementById('ragSearchType').value;
+
+    // Show loading state
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    // Show progress message after 10 seconds
+    let timeoutMsg = setTimeout(() => {
+        btnLoading.innerHTML = '<span class="spinner"></span> Still searching and generating answer... (This may take 30-60 seconds)';
+    }, 10000);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/rag`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question,
+                top_k: topK,
+                search_type: searchType,
+                min_score: 0.5
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayRAGResult(data);
+        } else {
+            showError('RAG query failed: ' + (data.error || data.detail || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('RAG error:', error);
+        showError('Failed to connect to API. Make sure the backend is running and legal documents are imported.');
+    } finally {
+        clearTimeout(timeoutMsg);
+        btnLoading.innerHTML = '<span class="spinner"></span> Searching legal database...';
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+function displayRAGResult(data) {
+    const resultPanel = document.getElementById('ragResult');
+    const ragMeta = document.getElementById('ragMeta');
+    const ragAnswer = document.getElementById('ragAnswer');
+    const ragSources = document.getElementById('ragSources');
+
+    // Meta
+    ragMeta.textContent = `Retrieved ${data.retrieved_count} ${data.search_type}`;
+
+    // Answer
+    ragAnswer.innerHTML = `<p style="white-space: pre-wrap; line-height: 1.6;">${data.answer}</p>`;
+
+    // Sources
+    if (data.sources && data.sources.length > 0) {
+        ragSources.innerHTML = `
+            <h4 style="margin-top: 24px; margin-bottom: 12px; color: var(--text-secondary);">📚 Legal Sources</h4>
+            <div class="sources-list">
+                ${data.sources.map((source, index) => `
+                    <div class="source-card">
+                        <div class="source-header">
+                            <span class="source-number">${index + 1}</span>
+                            <div class="source-title">
+                                <strong>${source.doc_name}</strong>: ${source.doc_title || 'Untitled'}
+                            </div>
+                            <span class="source-score">${(source.score * 100).toFixed(1)}% match</span>
+                        </div>
+                        ${source.section_number ? `
+                            <div class="source-section">
+                                <strong>Section ${source.section_number}</strong>: ${source.section_heading || ''}
+                            </div>
+                        ` : ''}
+                        <div class="source-preview">${source.preview}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else {
+        ragSources.innerHTML = `<p class="text-muted" style="margin-top: 20px;">No sources found</p>`;
+    }
 
     resultPanel.style.display = 'block';
     resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
