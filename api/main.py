@@ -1,6 +1,8 @@
 """
-Legal AI Vault - Main FastAPI Application
-Uses your local llama3.3:70b model via Ollama
+Vault AI Platform - Main FastAPI Application
+General-Purpose Workflow Agentic AI Platform
+Multi-domain support: Legal, HR, Customer Service, and more
+Extensible architecture for adding custom domain agents
 """
 
 from fastapi import FastAPI, HTTPException
@@ -17,6 +19,7 @@ from services.ollama_service import OllamaService
 from services.rag_service import RAGService
 from database import init_db, get_db
 from qdrant_client import QdrantClient
+from routes import agents as agent_routes
 
 # Configure logging
 logging.basicConfig(
@@ -31,9 +34,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Legal AI Vault API",
-    description="On-premises legal AI using llama3.3:70b",
-    version="1.0.0",
+    title="Vault AI Platform API",
+    description="Multi-domain agentic AI platform with specialized agents for Legal, HR, Customer Service, and more. Extensible workflow orchestration powered by local LLMs.",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -46,6 +49,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include agent routes
+app.include_router(agent_routes.router)
 
 # Initialize services
 ollama_service = OllamaService()
@@ -84,7 +90,7 @@ class RAGRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    logger.info("Starting Legal AI Vault API...")
+    logger.info("Starting Vault AI Platform API...")
 
     # Initialize database
     try:
@@ -136,9 +142,11 @@ else:
     async def root():
         """API information"""
         return {
-            "name": "Legal AI Vault API",
-            "version": "1.0.0",
-            "model": "llama3.3:70b",
+            "name": "Vault AI Platform API",
+            "version": "2.0.0",
+            "description": "Multi-domain agentic AI platform",
+            "agents": "/api/agents/",
+            "workflows": "/api/agents/workflows",
             "docs": "/docs",
             "health": "/health"
         }

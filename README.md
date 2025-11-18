@@ -1,388 +1,553 @@
-# Legal/Financial AI Vault
+# Vault AI Platform
 
-**On-premises AI inference system for legal and financial workflows**
+**Multi-Domain Agentic AI Platform with Extensible Workflow Orchestration**
 
-Powered by vLLM, Qdrant, and FastAPI running on 6-GPU server infrastructure.
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/wongivan852/legal-ai-vault)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Features
+---
 
-- **GPU-Accelerated Inference**: Multi-GPU vLLM deployment for high-throughput AI processing
-- **Vector Database**: Qdrant for semantic search and RAG (Retrieval Augmented Generation)
-- **Specialized AI Agents**:
-  - Contract Review Agent
-  - Compliance Monitoring Agent
-  - Legal Research Agent
-  - Document Router Agent
-- **Hong Kong Legal Database**: Complete HK legislation and instruments with AI-powered search
-- **Enterprise Security**: On-premises deployment, encrypted storage, comprehensive audit logging
-- **Multi-language Support**: English, Traditional Chinese, Simplified Chinese
+## 🚀 What is Vault AI Platform?
 
-## System Requirements
+Vault AI Platform is a **general-purpose agentic AI system** that orchestrates specialized AI agents to solve complex, multi-step tasks across different business domains. Unlike traditional single-purpose AI tools, Vault AI enables sophisticated **multi-agent workflows** where autonomous agents collaborate to provide comprehensive solutions.
 
-### Hardware
-- 6x NVIDIA GPUs (recommended: RTX 4090 or A100)
-- 128GB+ RAM
-- 4TB+ Storage (NVMe recommended)
-- 10GbE Network
+### Key Capabilities
 
-### Software
-- Ubuntu 22.04 LTS Server
-- Docker 24.x + Docker Compose
-- NVIDIA Driver 525+
-- CUDA 12.1+
+- **🤖 Multi-Agent Architecture**: 7 specialized agents (Legal, HR, CS, Analysis, Synthesis, Validation)
+- **🔄 Workflow Orchestration**: Pre-built and custom multi-step workflows
+- **🏢 Multi-Domain Support**: Legal, HR, Customer Service, and extensible to any domain
+- **🔧 100% On-Premises**: Your data never leaves your infrastructure
+- **🌐 REST API**: Complete API with 10+ endpoints for easy integration
+- **📦 Single App Deployment**: Simple Docker-based deployment (no microservices complexity)
+- **🧠 LLM Agnostic**: Works with Ollama, OpenAI, or any LLM provider
 
-## Quick Start
+---
+
+## 🎯 Use Cases
+
+### Enterprise Applications
+- **HR Operations**: Automated onboarding, policy Q&A, benefits administration
+- **Customer Support**: Intelligent ticket routing, response generation, escalation management
+- **Legal Compliance**: Policy compliance checking, contract analysis, regulatory research
+- **Business Analysis**: Multi-source data analysis, insight generation, report synthesis
+- **Knowledge Management**: Cross-domain knowledge synthesis, quality validation
+
+### System Integrator Applications
+- **White-Label AI Platform**: Rebrand and customize for clients
+- **Domain-Specific Solutions**: Add industry-specific agents (Finance, Healthcare, Manufacturing)
+- **Workflow Automation**: Build custom workflows for client processes
+- **Multi-Tenant SaaS**: Deploy as multi-tenant cloud service
+- **API Integration**: Integrate with existing enterprise systems
+
+---
+
+## ✨ Key Features
+
+### Specialized AI Agents
+
+| Agent | Domain | Capabilities |
+|-------|--------|-------------|
+| **LegalResearchAgent** | Legal | HK ordinance search, section retrieval, legal Q&A |
+| **HRPolicyAgent** | HR | Policy search, onboarding, benefits, general HR Q&A |
+| **CSDocumentAgent** | Customer Service | Ticket routing, response generation, escalation |
+| **AnalysisAgent** | Analytics | Data analysis, theme extraction, insights generation |
+| **SynthesisAgent** | Integration | Multi-source synthesis, report generation |
+| **ValidationAgent** | Quality | Accuracy checking, completeness validation |
+
+### Pre-Built Workflows
+
+1. **HR Onboarding** - Complete employee onboarding with personalized guides
+2. **CS Ticket Response** - Intelligent ticket handling with sentiment analysis
+3. **Legal-HR Compliance** - Cross-domain compliance checking
+4. **Simple Q&A** - Single-agent question answering with validation
+5. **Multi-Agent Research** - Comprehensive multi-perspective analysis
+
+### REST API
+
+```bash
+# Platform health
+GET /api/agents/health
+
+# List all agents
+GET /api/agents/
+
+# Execute agent
+POST /api/agents/{agent_name}/execute
+
+# List workflows
+GET /api/agents/workflows
+
+# Execute workflow
+POST /api/agents/workflows/{workflow_name}/execute
+
+# Get workflow examples
+GET /api/agents/workflows/{workflow_name}/example
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Vault AI Platform                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐│
+│  │  FastAPI REST   │  │   Workflow      │  │   Agent      ││
+│  │     API         │→│  Orchestrator   │→│  Registry    ││
+│  └─────────────────┘  └─────────────────┘  └──────────────┘│
+│                                                               │
+│  ┌──────────────────────────────────────────────────────────┤
+│  │             Specialized Domain Agents                     │
+│  ├──────────┬──────────┬──────────┬──────────┬─────────────┤
+│  │  Legal   │    HR    │    CS    │ Analysis │ Synthesis   │
+│  │ Research │  Policy  │ Document │          │             │
+│  └──────────┴──────────┴──────────┴──────────┴─────────────┘│
+│                                                               │
+│  ┌──────────────────────────────────────────────────────────┤
+│  │                 Infrastructure Layer                      │
+│  ├──────────────┬───────────────┬───────────────────────────┤
+│  │    Ollama    │  PostgreSQL   │      Qdrant Vector DB     │
+│  │   (LLM)      │  (Metadata)   │     (Embeddings)          │
+│  └──────────────┴───────────────┴───────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Technology Stack
+
+- **API Framework**: FastAPI (Python 3.10+)
+- **LLM Server**: Ollama (llama3.1:8b, llama3.3:70b, Qwen, DeepSeek)
+- **Vector Database**: Qdrant
+- **Relational Database**: PostgreSQL 15
+- **Embeddings**: nomic-embed-text
+- **Deployment**: Docker Compose
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Docker Desktop (Mac: 8GB+ RAM allocation recommended)
+- Ollama with at least one model installed (llama3.1:8b recommended)
+- Git
 
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/wongivan852/legal_financial_ai_vault.git
-cd legal_financial_ai_vault
+git clone https://github.com/wongivan852/legal-ai-vault.git
+cd legal-ai-vault
 ```
 
 ### 2. Configure Environment
 
 ```bash
-cp .env.example .env.production
-nano .env.production
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env file
+# - Set your preferred Ollama model (llama3.1:8b recommended)
+# - Update database credentials if needed
+# - Set secure JWT_SECRET and ENCRYPTION_KEY
+nano .env
 ```
 
-Set the following variables:
-```env
-# Database
-DB_USER=legal_vault_user
-DB_PASSWORD=<secure_password>
-
-# Security
-JWT_SECRET=<generate_with_openssl_rand_hex_32>
-ENCRYPTION_KEY=<generate_with_openssl_rand_hex_32>
-GRAFANA_PASSWORD=<admin_password>
-
-# vLLM Models
-VLLM_CONTRACT_URL=http://vllm-contract:8001/v1
-VLLM_COMPLIANCE_URL=http://vllm-compliance:8002/v1
-VLLM_ROUTER_URL=http://vllm-router:8003/v1
-EMBEDDING_URL=http://embedding-service:8004
-```
-
-### 3. Download AI Models
-
-```bash
-# Download Qwen models
-mkdir -p /data/models
-cd /data/models
-
-# Qwen 2.5 14B Instruct (for contract review and compliance)
-git clone https://huggingface.co/Qwen/Qwen2.5-14B-Instruct qwen2.5-14b-instruct
-
-# Qwen 2.5 7B Instruct (for routing)
-git clone https://huggingface.co/Qwen/Qwen2.5-7B-Instruct qwen2.5-7b-instruct
-
-# BGE Large English v1.5 (for embeddings)
-git clone https://huggingface.co/BAAI/bge-large-en-v1.5 bge-large-en-v1.5
-```
-
-### 4. Start Services
+### 3. Start Platform
 
 ```bash
 # Start all services
 docker-compose up -d
 
-# Check service health
-docker-compose ps
-
-# View logs
-docker-compose logs -f api
+# Check platform health
+curl http://localhost:8000/api/agents/health | python3 -m json.tool
 ```
 
-### 5. Initialize Database
+### 4. Verify Installation
 
 ```bash
-# Create admin user
-docker-compose exec api python scripts/create_admin.py
-
-# Import Hong Kong legal data (optional)
-./scripts/quick_start_hk_legal.sh
+# Expected output:
+{
+    "status": "healthy",
+    "agents": {
+        "hr_policy": "ready",
+        "cs_document": "ready",
+        "analysis": "ready",
+        "synthesis": "ready",
+        "validation": "ready"
+    },
+    "orchestrator": "ready",
+    "total_agents": 6,
+    "workflows_registered": 5
+}
 ```
 
-### 6. Access Services
-
-- **API Documentation**: https://your-server/api/docs
-- **Web UI**: https://your-server/
-- **Grafana Dashboard**: http://your-server:3001
-- **Prometheus**: http://your-server:9091
-
-## Hong Kong Legal Data Integration
-
-This system includes a comprehensive Hong Kong legal database with AI-powered search.
-
-### Features
-- **1,150+ Legal Documents** in English (3,450+ across all languages)
-- **Instruments**: A-series legal instruments
-- **Ordinances**: Cap. 1 to Cap. 600+
-- **Semantic Search**: AI-powered natural language queries
-- **Section-level Retrieval**: Granular search across all sections
-- **RAG Integration**: Retrieve relevant law sections for contract analysis
-
-### Quick Setup
+### 5. Test an Agent
 
 ```bash
-# Run automated setup
-./scripts/quick_start_hk_legal.sh
-
-# Or manual setup
-python scripts/ingest_hk_legal_data.py ~/Downloads/hkel_data --init-db --language en
+# Test HR Policy Agent
+curl -X POST http://localhost:8000/api/agents/hr_policy/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task": {
+      "question": "What are typical work hours?",
+      "task_type": "general"
+    }
+  }' | python3 -m json.tool
 ```
 
-### API Examples
+### 6. Access Interactive Docs
 
 ```bash
-# Search for employment law
-curl -X GET "http://localhost:8000/api/hk-legal/search?query=employment%20rights&language=en" \
-     -H "Authorization: Bearer YOUR_TOKEN"
-
-# Get statistics
-curl -X GET "http://localhost:8000/api/hk-legal/stats" \
-     -H "Authorization: Bearer YOUR_TOKEN"
-
-# Get Basic Law
-curl -X GET "http://localhost:8000/api/hk-legal/by_number/A101?language=en" \
-     -H "Authorization: Bearer YOUR_TOKEN"
+open http://localhost:8000/docs
 ```
 
-See [HK_LEGAL_DATA_INTEGRATION.md](HK_LEGAL_DATA_INTEGRATION.md) for complete documentation.
+---
 
-## Architecture
+## 📖 Documentation
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                  LEGAL AI VAULT                          │
-└─────────────────────────────────────────────────────────┘
+### Core Documentation
 
-                    Nginx Reverse Proxy (443)
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-   React UI           FastAPI Backend      Admin Dashboard
-   (Port 3000)        (Port 8000)         (Port 9090)
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             │
-                    Dify Workflow Engine
-                    (Agent Orchestration)
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-   vLLM GPU0-1         vLLM GPU2          vLLM GPU3-4
-   (Qwen-14B)          (Qwen-14B)         (Qwen-7B)
-   Contract Review     Compliance         Routing
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             │
-                    Embedding Service (GPU5)
-                    (bge-large-en-v1.5)
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-   Qdrant Vector DB    PostgreSQL          Encrypted Storage
-   (Embeddings)        (Metadata)          (Documents/Models)
-```
+1. **[PLATFORM_DOCUMENTATION.md](PLATFORM_DOCUMENTATION.md)** - Complete platform reference (1000+ lines)
+   - Architecture overview
+   - Agent catalog with full capabilities
+   - Workflow catalog with examples
+   - Complete API reference
+   - Integration guide
+   - Extension guide (add agents/workflows)
 
-## API Documentation
+2. **[PLATFORM_STATUS.md](PLATFORM_STATUS.md)** - Quick testing and status reference
+   - Health check commands
+   - Quick test commands
+   - Known issues
+   - Performance notes
 
-### Authentication
+3. **[INTEGRATION_TEST_COMPLETE.md](INTEGRATION_TEST_COMPLETE.md)** - Testing results
+   - Integration test results
+   - Performance metrics
+   - Troubleshooting guide
+
+### Quick Links
+
+- **Interactive API Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/api/agents/health
+- **Workflow Examples**: http://localhost:8000/api/agents/workflows/examples/all
+
+---
+
+## 🔧 Configuration
+
+### Model Configuration
+
+Edit `.env` file:
 
 ```bash
-# Login
-curl -X POST "http://localhost:8000/api/auth/login" \
-     -H "Content-Type: application/json" \
-     -d '{"email": "admin@example.com", "password": "password"}'
+# Use 8B model for faster responses (recommended for development)
+OLLAMA_MODEL=llama3.1:8b
 
-# Returns JWT token
+# Or use 70B model for better quality (requires 48GB+ RAM)
+# OLLAMA_MODEL=llama3.3:70b
+
+# For Chinese language support
+# OLLAMA_MODEL=qwen:14b
 ```
 
-### Contract Review
+### Performance Tuning
+
+| Model | Size | RAM | First Response | Subsequent | Use Case |
+|-------|------|-----|----------------|------------|----------|
+| llama3.2:3b | 2.0 GB | 4 GB | 10-20s | 5-10s | Simple Q&A |
+| llama3.1:8b | 4.9 GB | 8 GB | 50-60s | 10-20s | General purpose (recommended) |
+| llama3.3:70b | 42 GB | 48 GB | 180-300s | 60-120s | Complex analysis |
+| qwen:14b | ~10 GB | 16 GB | 60-90s | 20-30s | Chinese language |
+
+---
+
+## 🛠️ For System Integrators
+
+### Adding a New Agent
+
+```python
+# 1. Create agent class (api/agents/your_domain_agent.py)
+from agents.base_agent import BaseAgent
+
+class YourDomainAgent(BaseAgent):
+    def __init__(self, ollama_service, qdrant_client=None, db_session=None):
+        super().__init__(
+            name="your_domain",
+            domain="your_domain_name",
+            description="Description of your agent",
+            ollama_service=ollama_service,
+            qdrant_client=qdrant_client,
+            db_session=db_session
+        )
+
+    async def execute(self, task: dict) -> dict:
+        # Your agent logic here
+        pass
+
+# 2. Register agent (api/agents/__init__.py)
+from agents.your_domain_agent import YourDomainAgent
+
+# 3. Add to agent registry (api/routes/agents.py)
+_agents["your_domain"] = YourDomainAgent(ollama_service, qdrant, db)
+```
+
+See [PLATFORM_DOCUMENTATION.md](PLATFORM_DOCUMENTATION.md) Section 8 for complete guide.
+
+### Adding a New Workflow
+
+```python
+# Add to api/workflows/reference_workflows.py
+workflow = {
+    "name": "your_workflow",
+    "description": "Workflow description",
+    "tasks": [
+        {
+            "id": "task1",
+            "agent": "agent_name",
+            "input": {
+                "param": "${input.value}"
+            }
+        }
+    ],
+    "output": {
+        "result": "${task1.output}"
+    }
+}
+
+orchestrator.register_workflow("your_workflow", workflow)
+```
+
+See [PLATFORM_DOCUMENTATION.md](PLATFORM_DOCUMENTATION.md) Section 9 for complete guide.
+
+### White-Label Deployment
+
+1. **Rebrand**: Update app metadata in `api/main.py`
+2. **Custom Agents**: Add domain-specific agents for your client
+3. **Custom Workflows**: Build workflows for client processes
+4. **Frontend**: Build custom UI (React, Vue, etc.) using the REST API
+5. **Deploy**: Use included docker-compose.yml or deploy to cloud
+
+---
+
+## 🔒 Security & Production
+
+### Security Checklist
+
+- [ ] Change default database passwords in `.env`
+- [ ] Generate secure JWT_SECRET and ENCRYPTION_KEY
+- [ ] Configure ALLOWED_ORIGINS for CORS
+- [ ] Enable HTTPS with nginx reverse proxy
+- [ ] Add authentication (OAuth 2.0 or API keys)
+- [ ] Implement rate limiting
+- [ ] Enable audit logging
+- [ ] Regular security updates
+
+### Production Deployment
 
 ```bash
-# Upload document
-curl -X POST "http://localhost:8000/api/documents/upload" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -F "file=@contract.pdf"
+# 1. Update docker-compose.yml with nginx profile
+docker-compose --profile production up -d
 
-# Analyze contract
-curl -X POST "http://localhost:8000/api/agents/contract-review" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"document_id": "doc_123", "analysis_type": "comprehensive"}'
+# 2. Configure nginx for HTTPS
+# See nginx/nginx.conf for example
+
+# 3. Set up monitoring
+# - Prometheus + Grafana
+# - Health check monitoring
+# - Log aggregation
+
+# 4. Configure backups
+# - PostgreSQL database
+# - Qdrant vector database
+# - Application logs
 ```
 
-### HK Legal Search
+---
 
-```bash
-# Semantic search
-curl -X GET "http://localhost:8000/api/hk-legal/search?query=employment&language=en" \
-     -H "Authorization: Bearer YOUR_TOKEN"
+## 📊 Performance & Scaling
 
-# Browse by type
-curl -X GET "http://localhost:8000/api/hk-legal/documents?doc_type=ordinance" \
-     -H "Authorization: Bearer YOUR_TOKEN"
-```
+### Current Performance (Development)
 
-## Development
+- **First agent request**: 50-60 seconds (model loading)
+- **Subsequent requests**: 10-20 seconds
+- **Workflow execution**: 2-5 minutes (multiple agents)
+- **Concurrent users**: 10-20 (single Docker host)
 
-### Project Structure
+### Scaling Options
 
-```
-legal-ai-vault/
-├── api/                      # FastAPI backend
-│   ├── models/              # Database models
-│   ├── routers/             # API endpoints
-│   ├── services/            # Business logic
-│   ├── agents/              # AI agents
-│   ├── parsers/             # Data parsers
-│   └── security/            # Authentication
-├── frontend/                # React frontend
-├── scripts/                 # Utility scripts
-├── monitoring/              # Prometheus/Grafana
-├── docker-compose.yml       # Service orchestration
-└── docs/                    # Documentation
-```
+1. **Vertical Scaling**
+   - Increase Docker memory allocation
+   - Use faster GPU for LLM inference
+   - Use larger models for better quality
 
-### Running Tests
+2. **Horizontal Scaling**
+   - Deploy multiple API instances (load balancer)
+   - Separate LLM server (dedicated GPU machine)
+   - Separate database instances
 
-```bash
-# API tests
-docker-compose exec api pytest
+3. **Optimization**
+   - Model caching and pre-loading
+   - Connection pooling
+   - Async task queues (Celery/RQ)
+   - Redis caching layer
 
-# Frontend tests
-docker-compose exec frontend npm test
-```
+---
 
-### Database Migrations
-
-```bash
-# Create migration
-docker-compose exec api alembic revision --autogenerate -m "description"
-
-# Apply migration
-docker-compose exec api alembic upgrade head
-```
-
-## Monitoring
-
-### Grafana Dashboards
-
-Access at `http://localhost:3001`
-
-- **GPU Metrics**: GPU utilization, memory, temperature
-- **API Performance**: Request latency, throughput, error rates
-- **Vector DB**: Query performance, index size
-- **System Health**: CPU, memory, disk usage
-
-### Prometheus Metrics
-
-Available at `http://localhost:9091`
-
-Custom metrics:
-- `inference_requests_total`
-- `inference_latency_seconds`
-- `tokens_processed_total`
-- `vector_search_latency_seconds`
-
-## Security
-
-### Data Protection
-- **Encryption at Rest**: AES-256 for document storage
-- **Encryption in Transit**: TLS 1.3 for all communications
-- **Access Control**: Role-based access control (RBAC)
-- **Audit Logging**: 7-year retention for compliance
-
-### Network Security
-- **Firewall**: UFW with restrictive rules
-- **Intrusion Detection**: fail2ban
-- **AppArmor**: Mandatory Access Control
-- **VPN Only**: Restrict access to internal network
-
-## Performance
-
-### Benchmarks
-
-- **Contract Review**: ~2-3 seconds for 10-page contract
-- **Vector Search**: <100ms per query
-- **Concurrent Users**: 50+ simultaneous sessions
-- **Throughput**: 100+ documents per hour
-
-### Optimization
-
-```bash
-# GPU memory optimization
-VLLM_GPU_MEMORY_UTILIZATION=0.95
-
-# Batch size tuning
-VLLM_MAX_NUM_SEQS=256
-
-# Enable quantization (optional)
-VLLM_QUANTIZATION=awq
-```
-
-## Troubleshooting
-
-### GPU Issues
-
-```bash
-# Check GPU status
-nvidia-smi
-
-# Restart vLLM services
-docker-compose restart vllm-contract vllm-compliance vllm-router
-
-# Check GPU logs
-docker-compose logs vllm-contract
-```
-
-### Database Issues
-
-```bash
-# Check PostgreSQL status
-docker-compose exec postgres pg_isready
-
-# Reset database (WARNING: deletes all data)
-docker-compose down -v
-docker-compose up -d postgres
-docker-compose exec api python scripts/init_database.py
-```
-
-### Vector Database Issues
-
-```bash
-# Check Qdrant health
-curl http://localhost:6333/health
-
-# Rebuild collection
-docker-compose exec api python scripts/rebuild_vectors.py
-```
-
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+### Areas for Contribution
 
-Copyright © 2025 Legal AI Vault Contributors
+- New domain agents (Finance, Healthcare, Manufacturing)
+- New workflow templates
+- Frontend development (React/Vue UI)
+- Performance optimizations
+- Documentation improvements
+- Test coverage
+- Bug fixes
 
-This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+---
 
-## Support
+## 📜 License
 
-For technical support:
-- **GitHub Issues**: https://github.com/wongivan852/legal_financial_ai_vault/issues
-- **Email**: support@legal-ai-vault.com
-- **Documentation**: https://docs.legal-ai-vault.com
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+---
 
-- **vLLM**: High-performance LLM inference
-- **Qdrant**: Vector database engine
-- **FastAPI**: Modern web framework
-- **Qwen**: Large language models
-- **Hong Kong Department of Justice**: e-Legislation data
+## 🙋 Support
+
+### Getting Help
+
+- **Documentation**: See [PLATFORM_DOCUMENTATION.md](PLATFORM_DOCUMENTATION.md)
+- **Issues**: [GitHub Issues](https://github.com/wongivan852/legal-ai-vault/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/wongivan852/legal-ai-vault/discussions)
+
+### Troubleshooting
+
+**Platform not starting?**
+```bash
+# Check logs
+docker-compose logs -f api
+
+# Restart services
+docker-compose restart
+
+# Full reset
+docker-compose down
+docker-compose up -d
+```
+
+**Agent execution timeout?**
+```bash
+# Check model configuration
+docker exec legal-ai-api env | grep OLLAMA_MODEL
+
+# Should show: OLLAMA_MODEL=llama3.1:8b
+# If showing 70b, update .env and recreate container
+docker-compose up -d --force-recreate api
+```
+
+**Ollama out of memory?**
+```bash
+# Check Ollama memory usage
+docker stats legal-ai-ollama
+
+# If >80%, restart Ollama
+docker restart legal-ai-ollama
+```
+
+See [INTEGRATION_TEST_COMPLETE.md](INTEGRATION_TEST_COMPLETE.md) for complete troubleshooting guide.
+
+---
+
+## 🎓 Examples
+
+### Execute HR Agent
+
+```bash
+curl -X POST http://localhost:8000/api/agents/hr_policy/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task": {
+      "question": "What is the vacation policy?",
+      "task_type": "benefits",
+      "employee_type": "full-time"
+    }
+  }'
+```
+
+### Execute Workflow
+
+```bash
+curl -X POST http://localhost:8000/api/agents/workflows/hr_onboarding/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_data": {
+      "employee_name": "John Doe",
+      "employee_type": "full-time",
+      "department": "Engineering",
+      "start_date": "2024-01-15"
+    }
+  }'
+```
+
+### List All Agents
+
+```bash
+curl http://localhost:8000/api/agents/ | python3 -m json.tool
+```
+
+---
+
+## 🗺️ Roadmap
+
+### v2.1 (Q2 2025)
+- [ ] Web UI (React-based)
+- [ ] User authentication & authorization
+- [ ] Multi-tenant support
+- [ ] Advanced workflow builder
+- [ ] Performance dashboard
+
+### v2.2 (Q3 2025)
+- [ ] Financial domain agents
+- [ ] Healthcare domain agents
+- [ ] Manufacturing domain agents
+- [ ] Workflow marketplace
+- [ ] Cloud deployment templates (AWS, Azure, GCP)
+
+### v3.0 (Q4 2025)
+- [ ] Multi-LLM support (OpenAI, Anthropic, Google)
+- [ ] Advanced RAG with knowledge graphs
+- [ ] Real-time streaming responses
+- [ ] Mobile app (iOS/Android)
+- [ ] Enterprise features (SSO, audit logs, compliance)
+
+---
+
+## 🏆 Credits
+
+Built with:
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [Ollama](https://ollama.ai/) - Local LLM server
+- [Qdrant](https://qdrant.tech/) - Vector database
+- [PostgreSQL](https://www.postgresql.org/) - Relational database
+- [LangChain](https://langchain.com/) - LLM application framework
+
+---
+
+## 📞 Contact
+
+- **GitHub**: [wongivan852](https://github.com/wongivan852)
+- **Project**: [Vault AI Platform](https://github.com/wongivan852/legal-ai-vault)
+
+---
+
+**Made with ❤️ for the AI community**
+
+*Transform your business with intelligent, autonomous AI agents*
