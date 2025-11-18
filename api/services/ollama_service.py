@@ -90,7 +90,7 @@ class OllamaService:
                 async with session.post(
                     f"{self.base_url}/api/chat",
                     json=payload,
-                    timeout=aiohttp.ClientTimeout(total=300)
+                    timeout=aiohttp.ClientTimeout(total=600)  # 10 min for llama3.3:70b
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
