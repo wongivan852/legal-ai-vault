@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # Ollama service - uses your existing models
+  ollama:
+    image: ollama/ollama:latest
+    container_name: legal-ai-ollama
+    volumes:
+      # Mount your existing Ollama models (read-only for safety)
+      - /Users/wongivan/.ollama:/root/.ollama:ro
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    networks:
+      - legal-ai-network
+    # GPU support (uncomment for NVIDIA GPUs on Linux)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    # Health check disabled - ollama container doesn't have curl
+    # Service is ready when port is listening
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: legal-ai-postgres
+    environment:
+      POSTGRES_DB: legal_ai_vault
+      POSTGRES_USER: ${DB_USER:-legal_vault_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me_in_production}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+    networks:
+      - legal-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-legal_vault_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.8.0
+    container_name: legal-ai-qdrant
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    restart: unless-stopped
+    networks:
+      - legal-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  api:
+    build: ./api
+    container_name: legal-ai-api
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-legal_vault_user}:${DB_PASSWORD:-change_me_in_production}@postgres:5432/legal_ai_vault
+
+      # Vector Database
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+
+      # Ollama connection (configured in .env file)
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-change_me_generate_with_openssl_rand_hex_32}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change_me_generate_with_openssl_rand_hex_32}
+
+      # Application
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./api:/app
+      - ./frontend:/app/frontend
+      - ./data:/app/data:ro
+      - api_documents:/app/documents
+      - api_logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - qdrant
+      - ollama
+    restart: unless-stopped
+    networks:
+      - legal-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Reverse Proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: legal-ai-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - legal-ai-network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  api_documents:
+    driver: local
+  api_logs:
+    driver: local
+
+networks:
+  legal-ai-network:
+    driver: bridge

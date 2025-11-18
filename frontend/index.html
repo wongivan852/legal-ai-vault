@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal AI Vault - Testing Interface</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>⚖️ Legal AI Vault</h1>
+                <p class="subtitle">On-Premises Legal AI Testing Interface</p>
+                <div class="health-status" id="healthStatus">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Checking status...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="generate">Text Generation</button>
+                <button class="tab-btn" data-tab="embed">Embeddings</button>
+                <button class="tab-btn" data-tab="models">Models</button>
+                <button class="tab-btn" data-tab="docs">Documentation</button>
+            </div>
+
+            <!-- Tab Content: Text Generation -->
+            <div class="tab-content active" id="generate-tab">
+                <div class="panel">
+                    <h2>AI Legal Analysis</h2>
+                    <p class="panel-desc">Ask legal questions and get AI-powered responses using your local LLM</p>
+
+                    <form id="generateForm" class="form">
+                        <div class="form-group">
+                            <label for="systemPrompt">System Prompt (Optional)</label>
+                            <input
+                                type="text"
+                                id="systemPrompt"
+                                class="input-field"
+                                placeholder="You are a Hong Kong legal expert specializing in contract law..."
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prompt">Legal Query *</label>
+                            <textarea
+                                id="prompt"
+                                class="textarea-field"
+                                rows="4"
+                                required
+                                placeholder="Example: What are the essential elements of a valid employment contract in Hong Kong?"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maxTokens">Max Tokens</label>
+                                <input
+                                    type="number"
+                                    id="maxTokens"
+                                    class="input-field"
+                                    value="500"
+                                    min="50"
+                                    max="4096"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="temperature">Temperature (0-1)</label>
+                                <input
+                                    type="number"
+                                    id="temperature"
+                                    class="input-field"
+                                    value="0.3"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <span class="btn-text">Generate Response</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="spinner"></span> Generating...
+                                </span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearGenerate">Clear</button>
+                        </div>
+                    </form>
+
+                    <div id="generateResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3>AI Response</h3>
+                            <div class="result-meta" id="generateMeta"></div>
+                        </div>
+                        <div class="result-content" id="generateResponse"></div>
+                        <div class="result-stats" id="generateStats"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Embeddings -->
+            <div class="tab-content" id="embed-tab">
+                <div class="panel">
+                    <h2>Document Embeddings</h2>
+                    <p class="panel-desc">Generate vector embeddings for semantic search and document similarity</p>
+
+                    <form id="embedForm" class="form">
+                        <div class="form-group">
+                            <label for="embedText">Text to Embed *</label>
+                            <textarea
+                                id="embedText"
+                                class="textarea-field"
+                                rows="6"
+                                required
+                                placeholder="Example: Employment contract termination notice period requirements under Hong Kong Employment Ordinance"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="embedBtn">
+                                <span class="btn-text">Generate Embeddings</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="spinner"></span> Processing...
+                                </span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearEmbed">Clear</button>
+                        </div>
+                    </form>
+
+                    <div id="embedResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3>Embedding Vector</h3>
+                            <div class="result-meta" id="embedMeta"></div>
+                        </div>
+                        <div class="result-content">
+                            <div class="embed-info" id="embedInfo"></div>
+                            <div class="embed-preview" id="embedPreview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Models -->
+            <div class="tab-content" id="models-tab">
+                <div class="panel">
+                    <h2>Available Models</h2>
+                    <p class="panel-desc">View all models available in your Ollama instance</p>
+
+                    <button class="btn btn-primary" id="refreshModels">
+                        <span class="btn-text">🔄 Refresh Models</span>
+                    </button>
+
+                    <div id="modelsResult" class="models-grid" style="margin-top: 20px;">
+                        <p class="text-muted">Click "Refresh Models" to load available models</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Documentation -->
+            <div class="tab-content" id="docs-tab">
+                <div class="panel">
+                    <h2>API Documentation</h2>
+
+                    <div class="docs-section">
+                        <h3>Endpoints</h3>
+
+                        <div class="endpoint-card">
+                            <div class="endpoint-header">
+                                <span class="method method-get">GET</span>
+                                <code>/health</code>
+                            </div>
+                            <p>Check system health status and model availability</p>
+                        </div>
+
+                        <div class="endpoint-card">
+                            <div class="endpoint-header">
+                                <span class="method method-post">POST</span>
+                                <code>/api/generate</code>
+                            </div>
+                            <p>Generate text using the LLM model</p>
+                            <pre class="code-block">{
+  "prompt": "Your legal question",
+  "system_prompt": "Optional system context",
+  "temperature": 0.3,
+  "max_tokens": 500
+}</pre>
+                        </div>
+
+                        <div class="endpoint-card">
+                            <div class="endpoint-header">
+                                <span class="method method-post">POST</span>
+                                <code>/api/embed</code>
+                            </div>
+                            <p>Generate embeddings for text</p>
+                            <pre class="code-block">{
+  "text": "Text to embed"
+}</pre>
+                        </div>
+
+                        <div class="endpoint-card">
+                            <div class="endpoint-header">
+                                <span class="method method-get">GET</span>
+                                <code>/api/models</code>
+                            </div>
+                            <p>List all available Ollama models</p>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Quick Links</h3>
+                        <div class="quick-links">
+                            <a href="http://localhost:8000/docs" target="_blank" class="link-card">
+                                📖 Interactive API Docs (Swagger)
+                            </a>
+                            <a href="http://localhost:8000/redoc" target="_blank" class="link-card">
+                                📚 ReDoc Documentation
+                            </a>
+                            <a href="http://localhost:6333/dashboard" target="_blank" class="link-card">
+                                🔍 Qdrant Vector DB Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Legal AI Vault v1.0 - On-Premises Legal AI System</p>
+            <p class="footer-meta">Model: <span id="currentModel">Loading...</span> | API: <span id="apiVersion">v1.0.0</span></p>
+        </footer>
+    </div>
+
+    <script src="static/js/app.js"></script>
+</body>
+</html>
