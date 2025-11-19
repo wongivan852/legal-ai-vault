@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal AI Vault - Testing Interface</title>
+    <title>Vault AI Platform - Multi-Domain Agentic AI</title>
     <link rel="stylesheet" href="static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,8 +12,8 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1>⚖️ Legal AI Vault</h1>
-                <p class="subtitle">On-Premises Legal AI Testing Interface</p>
+                <h1>🤖 Vault AI Platform</h1>
+                <p class="subtitle">Multi-Domain Agentic AI Platform - Legal | HR | Customer Service</p>
                 <div class="health-status" id="healthStatus">
                     <span class="status-dot" id="statusDot"></span>
                     <span id="statusText">Checking status...</span>
@@ -26,10 +26,11 @@
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab-btn active" data-tab="rag">Legal RAG</button>
+                <button class="tab-btn" data-tab="agents">AI Agents</button>
+                <button class="tab-btn" data-tab="workflows">Workflows</button>
                 <button class="tab-btn" data-tab="generate">Text Generation</button>
-                <button class="tab-btn" data-tab="embed">Embeddings</button>
                 <button class="tab-btn" data-tab="models">Models</button>
-                <button class="tab-btn" data-tab="docs">Documentation</button>
+                <button class="tab-btn" data-tab="docs">API Docs</button>
             </div>
 
             <!-- Tab Content: Legal RAG -->
@@ -171,6 +172,84 @@
                 </div>
             </div>
 
+            <!-- Tab Content: AI Agents -->
+            <div class="tab-content" id="agents-tab">
+                <div class="panel">
+                    <h2>🤖 AI Agents</h2>
+                    <p class="panel-desc">Specialized agents for different business domains</p>
+
+                    <div style="margin-top: 20px;">
+                        <h3>Available Agents</h3>
+                        <div class="quick-links">
+                            <div class="link-card">
+                                <strong>⚖️ Legal Research Agent</strong>
+                                <p>Hong Kong ordinance search and legal Q&A</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>👥 HR Policy Agent</strong>
+                                <p>HR operations, onboarding, benefits administration</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>💬 Customer Service Agent</strong>
+                                <p>Ticket routing, response generation, escalation</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>📊 Analysis Agent</strong>
+                                <p>Data analysis, theme extraction, insights</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>🔗 Synthesis Agent</strong>
+                                <p>Multi-source synthesis and reporting</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>✅ Validation Agent</strong>
+                                <p>Quality assurance and accuracy checking</p>
+                            </div>
+                        </div>
+                        <p style="margin-top: 20px; text-align: center;">
+                            <a href="/docs#/Agents" target="_blank" class="btn btn-primary">View Agent API Documentation →</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Workflows -->
+            <div class="tab-content" id="workflows-tab">
+                <div class="panel">
+                    <h2>🔄 Multi-Agent Workflows</h2>
+                    <p class="panel-desc">Pre-built workflows orchestrating multiple agents</p>
+
+                    <div style="margin-top: 20px;">
+                        <h3>Available Workflows</h3>
+                        <div class="quick-links">
+                            <div class="link-card">
+                                <strong>👥 HR Onboarding</strong>
+                                <p>Complete employee onboarding with personalized guides</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>💬 CS Ticket Response</strong>
+                                <p>Intelligent ticket handling with sentiment analysis</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>⚖️ Legal-HR Compliance</strong>
+                                <p>Cross-domain compliance checking</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>💡 Simple Q&A</strong>
+                                <p>Question answering with validation</p>
+                            </div>
+                            <div class="link-card">
+                                <strong>🔍 Multi-Agent Research</strong>
+                                <p>Comprehensive multi-perspective analysis</p>
+                            </div>
+                        </div>
+                        <p style="margin-top: 20px; text-align: center;">
+                            <a href="/docs#/Workflows" target="_blank" class="btn btn-primary">View Workflow API Documentation →</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab Content: Embeddings -->
             <div class="tab-content" id="embed-tab">
                 <div class="panel">
@@ -299,8 +378,8 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Legal AI Vault v1.0 - On-Premises Legal AI System</p>
-            <p class="footer-meta">Model: <span id="currentModel">Loading...</span> | API: <span id="apiVersion">v1.0.0</span></p>
+            <p>Vault AI Platform v2.0.0 - Multi-Domain Agentic AI System</p>
+            <p class="footer-meta">Model: <span id="currentModel">Loading...</span> | API: <span id="apiVersion">v2.0.0</span> | <a href="/docs" target="_blank">API Docs</a> | <a href="https://github.com/wongivan852/legal-ai-vault" target="_blank">GitHub</a></p>
         </footer>
     </div>
 
