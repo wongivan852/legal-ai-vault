@@ -2,8 +2,8 @@
 Database model for sections within HK legal documents
 """
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Index, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Index, JSON, event
+from sqlalchemy.orm import relationship, validates
 from database import Base
 
 
@@ -28,7 +28,7 @@ class HKLegalSection(Base):
     content = Column(Text, nullable=False)  # Full section text
 
     # Hierarchy
-    has_subsections = Column(Integer, default=False)  # Boolean flag
+    has_subsections = Column(Integer, default=0)  # Boolean flag stored as Integer (0 or 1)
     subsections_json = Column(JSON)  # Array of subsection data
 
     # Vector embedding reference
@@ -36,6 +36,13 @@ class HKLegalSection(Base):
 
     # Relationship
     document = relationship("HKLegalDocument", back_populates="sections")
+
+    @validates('has_subsections')
+    def validate_has_subsections(self, key, value):
+        """Convert boolean to integer for has_subsections field"""
+        if isinstance(value, bool):
+            return 1 if value else 0
+        return int(value) if value is not None else 0
 
     # Indexes
     __table_args__ = (

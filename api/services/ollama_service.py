@@ -131,7 +131,7 @@ class OllamaService:
                 async with session.post(
                     f"{self.base_url}/api/embeddings",
                     json=payload,
-                    timeout=aiohttp.ClientTimeout(total=60)
+                    timeout=aiohttp.ClientTimeout(total=120)  # 2 min for embeddings
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()

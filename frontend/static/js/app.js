@@ -1,4 +1,4 @@
-// Legal AI Vault - Frontend JavaScript
+// Vault AI Platform - Frontend JavaScript
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -8,6 +8,7 @@ let currentHealth = null;
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     initializeTabs();
+    initializeAgentTabs();
     initializeForms();
     checkHealth();
 
@@ -34,37 +35,93 @@ function initializeTabs() {
     });
 }
 
+// Agent Sub-Tab Management
+function initializeAgentTabs() {
+    const agentTabButtons = document.querySelectorAll('.agent-tab-btn');
+    const agentContents = document.querySelectorAll('.agent-content');
+
+    agentTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const agentName = button.dataset.agent;
+
+            // Update active states
+            agentTabButtons.forEach(btn => btn.classList.remove('active'));
+            agentContents.forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+            document.getElementById(`${agentName}-agent`).classList.add('active');
+        });
+    });
+}
+
 // Form Initialization
 function initializeForms() {
     // Text Generation Form
     const generateForm = document.getElementById('generateForm');
     const clearGenerateBtn = document.getElementById('clearGenerate');
-
     generateForm.addEventListener('submit', handleGenerate);
     clearGenerateBtn.addEventListener('click', () => {
         generateForm.reset();
         document.getElementById('generateResult').style.display = 'none';
     });
 
-    // Embeddings Form
-    const embedForm = document.getElementById('embedForm');
-    const clearEmbedBtn = document.getElementById('clearEmbed');
-
-    embedForm.addEventListener('submit', handleEmbed);
-    clearEmbedBtn.addEventListener('click', () => {
-        embedForm.reset();
-        document.getElementById('embedResult').style.display = 'none';
+    // Legal Agent Form
+    const legalAgentForm = document.getElementById('legalAgentForm');
+    const clearLegalBtn = document.getElementById('clearLegal');
+    legalAgentForm.addEventListener('submit', handleLegalAgent);
+    clearLegalBtn.addEventListener('click', () => {
+        legalAgentForm.reset();
+        document.getElementById('legalAgentResult').style.display = 'none';
     });
 
-    // RAG Form
-    const ragForm = document.getElementById('ragForm');
-    const clearRagBtn = document.getElementById('clearRag');
-
-    ragForm.addEventListener('submit', handleRAG);
-    clearRagBtn.addEventListener('click', () => {
-        ragForm.reset();
-        document.getElementById('ragResult').style.display = 'none';
+    // HR Agent Form
+    const hrAgentForm = document.getElementById('hrAgentForm');
+    const clearHRBtn = document.getElementById('clearHR');
+    hrAgentForm.addEventListener('submit', handleHRAgent);
+    clearHRBtn.addEventListener('click', () => {
+        hrAgentForm.reset();
+        document.getElementById('hrAgentResult').style.display = 'none';
     });
+
+    // CS Agent Form
+    const csAgentForm = document.getElementById('csAgentForm');
+    const clearCSBtn = document.getElementById('clearCS');
+    csAgentForm.addEventListener('submit', handleCSAgent);
+    clearCSBtn.addEventListener('click', () => {
+        csAgentForm.reset();
+        document.getElementById('csAgentResult').style.display = 'none';
+    });
+
+    // Analysis Agent Form
+    const analysisAgentForm = document.getElementById('analysisAgentForm');
+    const clearAnalysisBtn = document.getElementById('clearAnalysis');
+    analysisAgentForm.addEventListener('submit', handleAnalysisAgent);
+    clearAnalysisBtn.addEventListener('click', () => {
+        analysisAgentForm.reset();
+        document.getElementById('analysisAgentResult').style.display = 'none';
+    });
+
+    // Synthesis Agent Form
+    const synthesisAgentForm = document.getElementById('synthesisAgentForm');
+    const clearSynthesisBtn = document.getElementById('clearSynthesis');
+    const addSourceBtn = document.getElementById('addSource');
+    synthesisAgentForm.addEventListener('submit', handleSynthesisAgent);
+    clearSynthesisBtn.addEventListener('click', () => {
+        synthesisAgentForm.reset();
+        document.getElementById('synthesisAgentResult').style.display = 'none';
+    });
+    addSourceBtn.addEventListener('click', addSynthesisSource);
+
+    // Validation Agent Form
+    const validationAgentForm = document.getElementById('validationAgentForm');
+    const clearValidationBtn = document.getElementById('clearValidation');
+    const addValidationDocBtn = document.getElementById('addValidationDoc');
+    validationAgentForm.addEventListener('submit', handleValidationAgent);
+    clearValidationBtn.addEventListener('click', () => {
+        validationAgentForm.reset();
+        document.getElementById('validationAgentResult').style.display = 'none';
+    });
+    addValidationDocBtn.addEventListener('click', addValidationDoc);
 
     // Models
     document.getElementById('refreshModels').addEventListener('click', loadModels);
@@ -94,7 +151,7 @@ function updateHealthDisplay(health) {
         statusDot.className = 'status-dot healthy';
         statusText.textContent = 'System Healthy';
         currentModel.textContent = health.ollama?.llm_model || 'Unknown';
-        apiVersion.textContent = health.api_version || 'v1.0.0';
+        apiVersion.textContent = health.api_version || 'v2.0.0';
     } else {
         statusDot.className = 'status-dot unhealthy';
         statusText.textContent = 'System Unhealthy';
@@ -153,8 +210,8 @@ async function handleGenerate(e) {
         console.error('Generation error:', error);
         showError('Failed to connect to API. Make sure the backend is running.');
     } finally {
-        clearTimeout(timeoutMsg);  // Clear the timeout message
-        btnLoading.innerHTML = '<span class="spinner"></span> Generating...';  // Reset message
+        clearTimeout(timeoutMsg);
+        btnLoading.innerHTML = '<span class="spinner"></span> Generating...';
         btn.disabled = false;
         btnText.style.display = 'inline';
         btnLoading.style.display = 'none';
@@ -198,183 +255,409 @@ function displayGenerateResult(data) {
     resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// Embeddings
-async function handleEmbed(e) {
-    e.preventDefault();
-
-    const btn = document.getElementById('embedBtn');
-    const btnText = btn.querySelector('.btn-text');
-    const btnLoading = btn.querySelector('.btn-loading');
-    const resultPanel = document.getElementById('embedResult');
-
-    const text = document.getElementById('embedText').value;
-
-    // Show loading state
-    btn.disabled = true;
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'inline-flex';
-    resultPanel.style.display = 'none';
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/embed`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            displayEmbedResult(data);
-        } else {
-            showError('Embedding failed: ' + (data.detail || 'Unknown error'));
-        }
-    } catch (error) {
-        console.error('Embedding error:', error);
-        showError('Failed to connect to API. Make sure the backend is running.');
-    } finally {
-        btn.disabled = false;
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
-    }
-}
-
-function displayEmbedResult(data) {
-    const resultPanel = document.getElementById('embedResult');
-    const embedMeta = document.getElementById('embedMeta');
-    const embedInfo = document.getElementById('embedInfo');
-    const embedPreview = document.getElementById('embedPreview');
-
-    // Meta
-    embedMeta.textContent = `Model: ${data.model}`;
-
-    // Info cards
-    embedInfo.innerHTML = `
-        <div class="info-card">
-            <div class="info-label">Dimensions</div>
-            <div class="info-value">${data.dimension}</div>
-        </div>
-        <div class="info-card">
-            <div class="info-label">Vector Length</div>
-            <div class="info-value">${data.embedding.length}</div>
-        </div>
-        <div class="info-card">
-            <div class="info-label">Model</div>
-            <div class="info-value" style="font-size: 0.9rem;">${data.model.split(':')[0]}</div>
-        </div>
-    `;
-
-    // Preview (first 50 values)
-    const preview = data.embedding.slice(0, 50);
-    const previewText = `[\n  ${preview.map(v => v.toFixed(6)).join(',\n  ')}\n  ... (${data.embedding.length - 50} more values)\n]`;
-    embedPreview.textContent = previewText;
-
-    resultPanel.style.display = 'block';
-    resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// RAG - Retrieval Augmented Generation
+// RAG - Retrieval Augmented Generation (DEPRECATED - Use Legal Research Agent instead)
+// Commenting out as we removed the standalone Legal RAG tab
+// The Legal Research Agent in AI Agents tab provides the same functionality
+/*
 async function handleRAG(e) {
+    // ... function removed to clean up code ...
+}
+
+function displayRAGResult(data) {
+    // ... function removed to clean up code ...
+}
+*/
+
+// Legal Research Agent
+async function handleLegalAgent(e) {
     e.preventDefault();
 
-    const btn = document.getElementById('ragBtn');
+    const btn = document.getElementById('legalAgentBtn');
     const btnText = btn.querySelector('.btn-text');
     const btnLoading = btn.querySelector('.btn-loading');
-    const resultPanel = document.getElementById('ragResult');
+    const resultPanel = document.getElementById('legalAgentResult');
 
-    // Get form values
-    const question = document.getElementById('ragQuestion').value;
-    const topK = parseInt(document.getElementById('ragTopK').value);
-    const searchType = document.getElementById('ragSearchType').value;
+    const question = document.getElementById('legalQuestion').value;
 
-    // Show loading state
     btn.disabled = true;
     btnText.style.display = 'none';
     btnLoading.style.display = 'inline-flex';
     resultPanel.style.display = 'none';
 
-    // Show progress message after 10 seconds
-    let timeoutMsg = setTimeout(() => {
-        btnLoading.innerHTML = '<span class="spinner"></span> Still searching and generating answer... (This may take 30-60 seconds)';
-    }, 10000);
-
     try {
-        const response = await fetch(`${API_BASE_URL}/api/rag`, {
+        const response = await fetch(`${API_BASE_URL}/api/agents/legal_research/execute`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                question,
-                top_k: topK,
-                search_type: searchType,
-                min_score: 0.5
+                task: {
+                    task_type: 'search',
+                    question: question
+                }
             })
         });
 
         const data = await response.json();
 
-        if (data.success) {
-            displayRAGResult(data);
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '⚖️ Legal Research Result');
         } else {
-            showError('RAG query failed: ' + (data.error || data.detail || 'Unknown error'));
+            showError('Legal research failed: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
-        console.error('RAG error:', error);
-        showError('Failed to connect to API. Make sure the backend is running and legal documents are imported.');
+        console.error('Legal agent error:', error);
+        showError('Failed to execute legal research agent.');
     } finally {
-        clearTimeout(timeoutMsg);
-        btnLoading.innerHTML = '<span class="spinner"></span> Searching legal database...';
         btn.disabled = false;
         btnText.style.display = 'inline';
         btnLoading.style.display = 'none';
     }
 }
 
-function displayRAGResult(data) {
-    const resultPanel = document.getElementById('ragResult');
-    const ragMeta = document.getElementById('ragMeta');
-    const ragAnswer = document.getElementById('ragAnswer');
-    const ragSources = document.getElementById('ragSources');
+// HR Policy Agent
+async function handleHRAgent(e) {
+    e.preventDefault();
 
-    // Meta
-    ragMeta.textContent = `Retrieved ${data.retrieved_count} ${data.search_type}`;
+    const btn = document.getElementById('hrAgentBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('hrAgentResult');
 
-    // Answer
-    ragAnswer.innerHTML = `<p style="white-space: pre-wrap; line-height: 1.6;">${data.answer}</p>`;
+    const question = document.getElementById('hrQuestion').value;
+    const context = document.getElementById('hrContext').value;
 
-    // Sources
-    if (data.sources && data.sources.length > 0) {
-        ragSources.innerHTML = `
-            <h4 style="margin-top: 24px; margin-bottom: 12px; color: var(--text-secondary);">📚 Legal Sources</h4>
-            <div class="sources-list">
-                ${data.sources.map((source, index) => `
-                    <div class="source-card">
-                        <div class="source-header">
-                            <span class="source-number">${index + 1}</span>
-                            <div class="source-title">
-                                <strong>${source.doc_name}</strong>: ${source.doc_title || 'Untitled'}
-                            </div>
-                            <span class="source-score">${(source.score * 100).toFixed(1)}% match</span>
-                        </div>
-                        ${source.section_number ? `
-                            <div class="source-section">
-                                <strong>Section ${source.section_number}</strong>: ${source.section_heading || ''}
-                            </div>
-                        ` : ''}
-                        <div class="source-preview">${source.preview}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } else {
-        ragSources.innerHTML = `<p class="text-muted" style="margin-top: 20px;">No sources found</p>`;
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/hr_policy/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task: {
+                    question: question,
+                    task_type: 'policy_search',
+                    context: context || undefined
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '👥 HR Policy Answer');
+        } else {
+            showError('HR policy query failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('HR agent error:', error);
+        showError('Failed to execute HR policy agent.');
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
     }
+}
+
+// Customer Service Agent
+async function handleCSAgent(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('csAgentBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('csAgentResult');
+
+    const question = document.getElementById('csQuestion').value;
+    const context = document.getElementById('csContext').value;
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/cs_document/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task: {
+                    question: question,
+                    task_type: 'support',
+                    context: context || undefined
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '💬 Support Answer');
+        } else {
+            showError('Customer service query failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('CS agent error:', error);
+        showError('Failed to execute customer service agent.');
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// Analysis Agent
+async function handleAnalysisAgent(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('analysisAgentBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('analysisAgentResult');
+
+    const text = document.getElementById('analysisText').value;
+    const focus = document.getElementById('analysisFocus').value;
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/analysis/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task: {
+                    task_type: 'analysis',
+                    text: text,
+                    focus: focus || undefined
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '📊 Analysis Results');
+        } else {
+            showError('Analysis failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Analysis agent error:', error);
+        showError('Failed to execute analysis agent.');
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// Synthesis Agent
+async function handleSynthesisAgent(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('synthesisAgentBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('synthesisAgentResult');
+
+    // Collect sources
+    const sourceElements = document.querySelectorAll('.synthesis-source');
+    const sources = [];
+
+    sourceElements.forEach(sourceEl => {
+        const title = sourceEl.querySelector('.source-title').value;
+        const content = sourceEl.querySelector('.source-content').value;
+
+        if (title && content) {
+            sources.push({ title, content });
+        }
+    });
+
+    if (sources.length < 2) {
+        showError('Please provide at least 2 sources for synthesis.');
+        return;
+    }
+
+    const focus = document.getElementById('synthesisFocus').value;
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/synthesis/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task: {
+                    task_type: 'synthesis',
+                    sources: sources,
+                    focus: focus || undefined
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '🔗 Synthesis Results');
+        } else {
+            showError('Synthesis failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Synthesis agent error:', error);
+        showError('Failed to execute synthesis agent.');
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// Validation Agent
+async function handleValidationAgent(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('validationAgentBtn');
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    const resultPanel = document.getElementById('validationAgentResult');
+
+    // Collect documents
+    const docElements = document.querySelectorAll('.validation-doc');
+    const documents = [];
+
+    docElements.forEach(docEl => {
+        const title = docEl.querySelector('.doc-title').value;
+        const content = docEl.querySelector('.doc-content').value;
+
+        if (title && content) {
+            documents.push({ title, content });
+        }
+    });
+
+    if (documents.length < 2) {
+        showError('Please provide at least 2 documents for validation.');
+        return;
+    }
+
+    const focus = document.getElementById('validationFocus').value;
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    resultPanel.style.display = 'none';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agents/validation/execute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task: {
+                    task_type: 'validation',
+                    documents: documents,
+                    focus: focus || undefined
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            displayAgentResult(resultPanel, data, '✅ Validation Results');
+        } else {
+            showError('Validation failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Validation agent error:', error);
+        showError('Failed to execute validation agent.');
+    } finally {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+    }
+}
+
+// Generic Agent Result Display
+function displayAgentResult(resultPanel, data, title) {
+    const result = data.result || {};
+
+    resultPanel.innerHTML = `
+        <div class="result-header">
+            <h3>${title}</h3>
+            <div class="result-meta">Agent: ${data.agent} | Time: ${data.execution_time?.toFixed(2)}s</div>
+        </div>
+        <div class="result-content">
+            <p style="white-space: pre-wrap; line-height: 1.6;">${result.answer || result.response || JSON.stringify(result, null, 2)}</p>
+        </div>
+        ${result.sources && result.sources.length > 0 ? `
+            <div class="result-sources">
+                <h4 style="margin-top: 24px; margin-bottom: 12px;">📚 Sources</h4>
+                <div class="sources-list">
+                    ${result.sources.map((source, index) => `
+                        <div class="source-card">
+                            <div class="source-header">
+                                <span class="source-number">${index + 1}</span>
+                                <div class="source-title">
+                                    <strong>${source.title || source.doc_name || `Source ${index + 1}`}</strong>
+                                </div>
+                                ${source.score ? `<span class="source-score">${(source.score * 100).toFixed(1)}% match</span>` : ''}
+                            </div>
+                            <div class="source-preview">${source.content || source.preview || ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
 
     resultPanel.style.display = 'block';
     resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Dynamic Source/Document Addition
+function addSynthesisSource() {
+    const container = document.getElementById('synthesisSourcesContainer');
+    const sourceCount = container.querySelectorAll('.synthesis-source').length + 1;
+
+    const newSource = document.createElement('div');
+    newSource.className = 'synthesis-source';
+    newSource.innerHTML = `
+        <input type="text" class="input-field source-title" placeholder="Source ${sourceCount} Title">
+        <textarea class="textarea-field source-content" rows="4" placeholder="Source ${sourceCount} Content"></textarea>
+    `;
+
+    container.appendChild(newSource);
+}
+
+function addValidationDoc() {
+    const container = document.getElementById('validationDocsContainer');
+    const docCount = container.querySelectorAll('.validation-doc').length + 1;
+
+    const newDoc = document.createElement('div');
+    newDoc.className = 'validation-doc';
+    newDoc.innerHTML = `
+        <input type="text" class="input-field doc-title" placeholder="Document ${docCount} Title">
+        <textarea class="textarea-field doc-content" rows="4" placeholder="Document ${docCount} Content"></textarea>
+    `;
+
+    container.appendChild(newDoc);
 }
 
 // Load Models
@@ -410,7 +693,6 @@ function displayModels(data) {
         const sizeGB = (model.size / (1024 * 1024 * 1024)).toFixed(2);
         const modifiedDate = new Date(model.modified_at).toLocaleDateString();
 
-        // Determine if this is an embedding model (typically smaller or has "embed" in name)
         const isEmbeddingModel = model.name.includes('embed') || sizeGB < 1;
 
         return `
@@ -434,73 +716,18 @@ function displayModels(data) {
                         <span class="model-detail-value">${model.details?.quantization_level || 'N/A'}</span>
                     </div>
                     <div class="model-detail">
-                        <span class="model-detail-label">Format</span>
-                        <span class="model-detail-value">${model.details?.format?.toUpperCase() || 'N/A'}</span>
-                    </div>
-                    <div class="model-detail">
                         <span class="model-detail-label">Modified</span>
                         <span class="model-detail-value">${modifiedDate}</span>
                     </div>
                 </div>
-                <div class="model-actions" style="margin-top: 16px; display: flex; gap: 8px;">
-                    ${!isActiveLLM ? `<button class="btn-model-select" data-model="${model.name}" data-type="llm" style="flex: 1;">
-                        Use as LLM
-                    </button>` : ''}
-                    ${!isActiveEmbedding && isEmbeddingModel ? `<button class="btn-model-select" data-model="${model.name}" data-type="embedding" style="flex: 1;">
-                        Use for Embeddings
-                    </button>` : ''}
-                </div>
             </div>
         `;
     }).join('');
-
-    // Add event listeners to all model select buttons
-    document.querySelectorAll('.btn-model-select').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const modelName = e.target.dataset.model;
-            const modelType = e.target.dataset.type;
-            switchModel(modelName, modelType);
-        });
-    });
-}
-
-// Switch Model
-async function switchModel(modelName, modelType) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/models/set`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model_name: modelName,
-                model_type: modelType
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Show success message
-            alert(`✓ ${data.message}\n\nActive models:\n• LLM: ${data.active_llm}\n• Embedding: ${data.active_embedding}`);
-
-            // Reload models to update UI
-            await loadModels();
-
-            // Update health check
-            await checkHealth();
-        } else {
-            showError('Failed to switch model: ' + (data.detail || 'Unknown error'));
-        }
-    } catch (error) {
-        console.error('Model switch error:', error);
-        showError('Failed to switch model. Check if the API is running.');
-    }
 }
 
 // Error Handling
 function showError(message) {
-    alert(message); // Simple error handling - can be enhanced with toast notifications
+    alert(message);
 }
 
 // Utility Functions
