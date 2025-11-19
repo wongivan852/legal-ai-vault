@@ -17,6 +17,7 @@ from agents import (
     ValidationAgent,
     WorkflowOrchestrator
 )
+from agents.synthesis_agent_enhanced import EnhancedSynthesisAgent
 from services.ollama_service import OllamaService
 from services.rag_service import RAGService
 from database import get_db
@@ -121,9 +122,10 @@ def get_agent_registry():
                 "domain": "general"
             },
             "synthesis": {
-                "agent": SynthesisAgent(ollama),
-                "class": SynthesisAgent,
-                "domain": "general"
+                "agent": None,  # Initialized on demand (needs RAG for enhanced mode)
+                "class": EnhancedSynthesisAgent,
+                "domain": "general",
+                "requires_rag": True
             },
             "validation": {
                 "agent": ValidationAgent(ollama),
@@ -175,6 +177,28 @@ def get_agent(agent_name: str, db: Session = None):
             raise HTTPException(
                 status_code=503,
                 detail="Legal research agent requires database connection"
+            )
+
+    # Special handling for synthesis agent (needs RAG for enhanced features)
+    if agent_name == "synthesis":
+        if not agent_info["agent"] and db:
+            ollama = OllamaService()
+            qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+            qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+            qdrant = QdrantClient(host=qdrant_host, port=qdrant_port)
+            rag = RAGService(db, qdrant, ollama)
+            agent_info["agent"] = EnhancedSynthesisAgent(ollama, rag)
+
+            # Register with orchestrator
+            _, orchestrator = get_agent_registry()
+            orchestrator.register_agent(agent_info["agent"])
+
+            logger.info("Enhanced Synthesis Agent initialized with RAG capability")
+
+        if not agent_info["agent"]:
+            raise HTTPException(
+                status_code=503,
+                detail="Synthesis agent requires database connection for enhanced features"
             )
 
     return agent_info["agent"]

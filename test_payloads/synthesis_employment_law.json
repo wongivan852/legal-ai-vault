@@ -1,0 +1,15 @@
+{
+  "task": {
+    "task_type": "synthesis",
+    "auto_retrieve": true,
+    "document_queries": [
+      "employment contract requirements Hong Kong",
+      "termination notice periods employment",
+      "severance payment provisions",
+      "annual leave entitlements statutory"
+    ],
+    "top_k_per_query": 5,
+    "min_score": 0.65,
+    "focus": "Create practical guide for employment termination and employee entitlements"
+  }
+}

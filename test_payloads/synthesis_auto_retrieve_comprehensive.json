@@ -1,0 +1,15 @@
+{
+  "task": {
+    "task_type": "synthesis",
+    "auto_retrieve": true,
+    "document_queries": [
+      "director fiduciary duties Companies Ordinance",
+      "director statutory obligations and responsibilities",
+      "director liability indemnification provisions",
+      "company secretary duties Companies Ordinance"
+    ],
+    "top_k_per_query": 6,
+    "min_score": 0.6,
+    "focus": "Create comprehensive corporate governance guide covering directors and company secretary"
+  }
+}

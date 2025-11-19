@@ -105,12 +105,15 @@ function initializeForms() {
     const synthesisAgentForm = document.getElementById('synthesisAgentForm');
     const clearSynthesisBtn = document.getElementById('clearSynthesis');
     const addSourceBtn = document.getElementById('addSource');
+    const autoRetrieveCheckbox = document.getElementById('synthesisAutoRetrieve');
     synthesisAgentForm.addEventListener('submit', handleSynthesisAgent);
     clearSynthesisBtn.addEventListener('click', () => {
         synthesisAgentForm.reset();
         document.getElementById('synthesisAgentResult').style.display = 'none';
+        toggleSynthesisMode(); // Reset UI to manual mode
     });
     addSourceBtn.addEventListener('click', addSynthesisSource);
+    autoRetrieveCheckbox.addEventListener('change', toggleSynthesisMode);
 
     // Validation Agent Form
     const validationAgentForm = document.getElementById('validationAgentForm');
@@ -300,7 +303,7 @@ async function handleLegalAgent(e) {
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '⚖️ Legal Research Result');
         } else {
             showError('Legal research failed: ' + (data.error || 'Unknown error'));
@@ -349,7 +352,7 @@ async function handleHRAgent(e) {
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '👥 HR Policy Answer');
         } else {
             showError('HR policy query failed: ' + (data.error || 'Unknown error'));
@@ -389,16 +392,16 @@ async function handleCSAgent(e) {
             },
             body: JSON.stringify({
                 task: {
-                    question: question,
-                    task_type: 'support',
-                    context: context || undefined
+                    ticket: question + (context ? '\n\nContext: ' + context : ''),
+                    task_type: 'respond',
+                    category: 'general'
                 }
             })
         });
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '💬 Support Answer');
         } else {
             showError('Customer service query failed: ' + (data.error || 'Unknown error'));
@@ -438,8 +441,8 @@ async function handleAnalysisAgent(e) {
             },
             body: JSON.stringify({
                 task: {
-                    task_type: 'analysis',
-                    text: text,
+                    analysis_type: 'summary',
+                    data: text,
                     focus: focus || undefined
                 }
             })
@@ -447,7 +450,7 @@ async function handleAnalysisAgent(e) {
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '📊 Analysis Results');
         } else {
             showError('Analysis failed: ' + (data.error || 'Unknown error'));
@@ -462,6 +465,40 @@ async function handleAnalysisAgent(e) {
     }
 }
 
+// Toggle Synthesis Agent Mode (Manual vs Auto-Retrieve)
+function toggleSynthesisMode() {
+    const autoRetrieveCheckbox = document.getElementById('synthesisAutoRetrieve');
+    const autoRetrieveOptions = document.getElementById('synthesisAutoRetrieveOptions');
+    const manualSources = document.getElementById('synthesisManualSources');
+
+    const isAutoRetrieve = autoRetrieveCheckbox.checked;
+
+    if (isAutoRetrieve) {
+        // Show auto-retrieve options, hide manual sources
+        autoRetrieveOptions.style.display = 'block';
+        manualSources.style.display = 'none';
+
+        // Remove required attribute from manual source fields
+        const manualInputs = manualSources.querySelectorAll('input[required], textarea[required]');
+        manualInputs.forEach(input => {
+            input.removeAttribute('required');
+            input.dataset.wasRequired = 'true'; // Remember for later
+        });
+    } else {
+        // Show manual sources, hide auto-retrieve options
+        autoRetrieveOptions.style.display = 'none';
+        manualSources.style.display = 'block';
+
+        // Restore required attribute to manual source fields
+        const manualInputs = manualSources.querySelectorAll('input[data-was-required], textarea[data-was-required]');
+        manualInputs.forEach(input => {
+            if (input.dataset.wasRequired === 'true') {
+                input.setAttribute('required', '');
+            }
+        });
+    }
+}
+
 // Synthesis Agent
 async function handleSynthesisAgent(e) {
     e.preventDefault();
@@ -471,30 +508,80 @@ async function handleSynthesisAgent(e) {
     const btnLoading = btn.querySelector('.btn-loading');
     const resultPanel = document.getElementById('synthesisAgentResult');
 
-    // Collect sources
-    const sourceElements = document.querySelectorAll('.synthesis-source');
-    const sources = [];
-
-    sourceElements.forEach(sourceEl => {
-        const title = sourceEl.querySelector('.source-title').value;
-        const content = sourceEl.querySelector('.source-content').value;
-
-        if (title && content) {
-            sources.push({ title, content });
-        }
-    });
-
-    if (sources.length < 2) {
-        showError('Please provide at least 2 sources for synthesis.');
-        return;
-    }
-
+    const autoRetrieve = document.getElementById('synthesisAutoRetrieve').checked;
     const focus = document.getElementById('synthesisFocus').value;
+
+    // Build task based on mode
+    let task = {
+        task_type: 'synthesis',
+        focus: focus || undefined
+    };
+
+    if (autoRetrieve) {
+        // Auto-retrieve mode: Build document queries
+        const queriesText = document.getElementById('synthesisQueries').value.trim();
+
+        if (!queriesText) {
+            showError('Please enter at least one search query for document retrieval.');
+            return;
+        }
+
+        // Split queries by newline
+        const documentQueries = queriesText
+            .split('\n')
+            .map(q => q.trim())
+            .filter(q => q.length > 0);
+
+        if (documentQueries.length === 0) {
+            showError('Please enter at least one valid search query.');
+            return;
+        }
+
+        const topK = parseInt(document.getElementById('synthesisTopK').value) || 5;
+        const minScore = parseFloat(document.getElementById('synthesisMinScore').value) || 0.6;
+
+        task.auto_retrieve = true;
+        task.document_queries = documentQueries;
+        task.top_k_per_query = topK;
+        task.min_score = minScore;
+        task.question = documentQueries[0]; // Use first query as main question
+
+        console.log('Auto-retrieve mode:', { documentQueries, topK, minScore });
+    } else {
+        // Manual mode: Collect sources from form
+        const sourceElements = document.querySelectorAll('.synthesis-source');
+        const sources = [];
+
+        sourceElements.forEach(sourceEl => {
+            const title = sourceEl.querySelector('.source-title').value;
+            const content = sourceEl.querySelector('.source-content').value;
+
+            if (title && content) {
+                sources.push({ title, content });
+            }
+        });
+
+        if (sources.length < 2) {
+            showError('Please provide at least 2 sources for synthesis.');
+            return;
+        }
+
+        task.sources = sources;
+        console.log('Manual mode:', { sources: sources.length });
+    }
 
     btn.disabled = true;
     btnText.style.display = 'none';
     btnLoading.style.display = 'inline-flex';
     resultPanel.style.display = 'none';
+
+    // Show extended progress message for auto-retrieve (vector search + synthesis takes longer)
+    let timeoutMsg = null;
+    if (autoRetrieve) {
+        timeoutMsg = setTimeout(() => {
+            btnLoading.innerHTML = '<span class="spinner"></span> Searching legal database and synthesizing... (may take 1-2 minutes)';
+        }, 5000);
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/agents/synthesis/execute`, {
@@ -502,26 +589,22 @@ async function handleSynthesisAgent(e) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                task: {
-                    task_type: 'synthesis',
-                    sources: sources,
-                    focus: focus || undefined
-                }
-            })
+            body: JSON.stringify({ task })
         });
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '🔗 Synthesis Results');
         } else {
-            showError('Synthesis failed: ' + (data.error || 'Unknown error'));
+            showError('Synthesis failed: ' + (data.error || data.result?.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Synthesis agent error:', error);
-        showError('Failed to execute synthesis agent.');
+        showError('Failed to execute synthesis agent. Check console for details.');
     } finally {
+        if (timeoutMsg) clearTimeout(timeoutMsg);
+        btnLoading.innerHTML = '<span class="spinner"></span> Synthesizing...';
         btn.disabled = false;
         btnText.style.display = 'inline';
         btnLoading.style.display = 'none';
@@ -563,6 +646,11 @@ async function handleValidationAgent(e) {
     resultPanel.style.display = 'none';
 
     try {
+        // Prepare content - concatenate all documents
+        const content = documents.map((doc, idx) =>
+            `Document ${idx + 1}: ${doc.title}\n${doc.content}`
+        ).join('\n\n---\n\n');
+
         const response = await fetch(`${API_BASE_URL}/api/agents/validation/execute`, {
             method: 'POST',
             headers: {
@@ -570,16 +658,16 @@ async function handleValidationAgent(e) {
             },
             body: JSON.stringify({
                 task: {
-                    task_type: 'validation',
-                    documents: documents,
-                    focus: focus || undefined
+                    validation_type: focus || 'comprehensive',
+                    content: content,
+                    question: 'Validate the following documents'
                 }
             })
         });
 
         const data = await response.json();
 
-        if (data.status === 'success') {
+        if (data.status === 'completed' || data.status === 'success') {
             displayAgentResult(resultPanel, data, '✅ Validation Results');
         } else {
             showError('Validation failed: ' + (data.error || 'Unknown error'));
@@ -598,13 +686,36 @@ async function handleValidationAgent(e) {
 function displayAgentResult(resultPanel, data, title) {
     const result = data.result || {};
 
+    // Extract content based on agent type
+    let content = '';
+
+    if (result.answer) {
+        // Legal Research, HR Policy agents
+        content = result.answer;
+    } else if (result.response) {
+        // Customer Service agent
+        content = result.response;
+    } else if (result.analysis && result.analysis.summary) {
+        // Analysis agent
+        content = result.analysis.summary;
+    } else if (result.synthesized_output) {
+        // Synthesis agent
+        content = result.synthesized_output;
+    } else if (result.validation_result) {
+        // Validation agent - format validation results nicely
+        content = formatValidationResult(result);
+    } else {
+        // Fallback to JSON
+        content = JSON.stringify(result, null, 2);
+    }
+
     resultPanel.innerHTML = `
         <div class="result-header">
             <h3>${title}</h3>
             <div class="result-meta">Agent: ${data.agent} | Time: ${data.execution_time?.toFixed(2)}s</div>
         </div>
         <div class="result-content">
-            <p style="white-space: pre-wrap; line-height: 1.6;">${result.answer || result.response || JSON.stringify(result, null, 2)}</p>
+            <p style="white-space: pre-wrap; line-height: 1.6;">${content}</p>
         </div>
         ${result.sources && result.sources.length > 0 ? `
             <div class="result-sources">
@@ -629,6 +740,34 @@ function displayAgentResult(resultPanel, data, title) {
 
     resultPanel.style.display = 'block';
     resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Format validation results for display
+function formatValidationResult(result) {
+    const resultEmoji = result.validation_result === 'passed' ? '✅' :
+                       result.validation_result === 'partial' ? '⚠️' : '❌';
+
+    let formatted = `${resultEmoji} Validation Result: ${result.validation_result.toUpperCase()}\n`;
+    formatted += `Quality Score: ${result.quality_score}/100\n\n`;
+
+    if (result.issues && result.issues.length > 0) {
+        formatted += `Issues Found (${result.issues.length}):\n`;
+        result.issues.forEach((issue, idx) => {
+            const issueText = typeof issue === 'string' ? issue : issue.description || JSON.stringify(issue);
+            formatted += `${idx + 1}. ${issueText}\n`;
+        });
+        formatted += '\n';
+    }
+
+    if (result.recommendations && result.recommendations.length > 0) {
+        formatted += `Recommendations:\n`;
+        result.recommendations.forEach((rec, idx) => {
+            const recText = typeof rec === 'string' ? rec : rec.description || JSON.stringify(rec);
+            formatted += `${idx + 1}. ${recText}\n`;
+        });
+    }
+
+    return formatted;
 }
 
 // Dynamic Source/Document Addition

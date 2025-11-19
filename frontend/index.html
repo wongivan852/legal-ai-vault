@@ -50,7 +50,7 @@
                         <button class="agent-tab-btn" data-agent="cs">💬 Customer Service</button>
                         <button class="agent-tab-btn" data-agent="analysis">📊 Analysis</button>
                         <button class="agent-tab-btn" data-agent="synthesis">🔗 Synthesis</button>
-                        <button class="agent-tab-btn" data-agent="validation">✅ Validation</button>
+                        <button class="agent-tab-btn" data-agent="validation">⚖️ Legal Validation</button>
                     </div>
 
                     <!-- Legal Research Agent -->
@@ -210,23 +210,78 @@
                             <p>Combine information from multiple sources into comprehensive insights</p>
                         </div>
                         <form id="synthesisAgentForm" class="form">
+                            <!-- Auto-Retrieve Toggle -->
                             <div class="form-group">
-                                <label>Source Documents *</label>
-                                <div id="synthesisSourcesContainer">
-                                    <div class="synthesis-source">
-                                        <input type="text" class="input-field source-title" placeholder="Source 1 Title (e.g., Customer Survey)" required>
-                                        <textarea class="textarea-field source-content" rows="4" placeholder="Source 1 Content" required></textarea>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="synthesisAutoRetrieve" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span style="font-weight: 600;">🔍 Auto-retrieve documents from Legal Database</span>
+                                </label>
+                                <small class="form-hint">💡 Enable to automatically search and retrieve relevant legal documents from the 1,699 HK ordinances database</small>
+                            </div>
+
+                            <!-- Auto-Retrieve Options (shown when toggle is enabled) -->
+                            <div id="synthesisAutoRetrieveOptions" style="display: none; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                                <div class="form-group">
+                                    <label for="synthesisQueries">Search Queries *</label>
+                                    <textarea
+                                        id="synthesisQueries"
+                                        class="textarea-field"
+                                        rows="3"
+                                        placeholder="Enter search queries (one per line). Example:&#10;director duties in Hong Kong&#10;company secretary responsibilities&#10;corporate governance requirements"
+                                    ></textarea>
+                                    <small class="form-hint">💡 Enter multiple search queries to find relevant sections from different legal topics</small>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="synthesisTopK">Documents per Query</label>
+                                        <input
+                                            type="number"
+                                            id="synthesisTopK"
+                                            class="input-field"
+                                            value="5"
+                                            min="1"
+                                            max="20"
+                                        >
+                                        <small class="form-hint">How many documents to retrieve per query</small>
                                     </div>
-                                    <div class="synthesis-source">
-                                        <input type="text" class="input-field source-title" placeholder="Source 2 Title (e.g., App Store Reviews)" required>
-                                        <textarea class="textarea-field source-content" rows="4" placeholder="Source 2 Content" required></textarea>
-                                    </div>
-                                    <div class="synthesis-source">
-                                        <input type="text" class="input-field source-title" placeholder="Source 3 Title (e.g., Support Tickets)">
-                                        <textarea class="textarea-field source-content" rows="4" placeholder="Source 3 Content (optional)"></textarea>
+
+                                    <div class="form-group">
+                                        <label for="synthesisMinScore">Min Relevance Score</label>
+                                        <input
+                                            type="number"
+                                            id="synthesisMinScore"
+                                            class="input-field"
+                                            value="0.6"
+                                            min="0"
+                                            max="1"
+                                            step="0.05"
+                                        >
+                                        <small class="form-hint">Minimum similarity score (0-1, higher = stricter)</small>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-secondary" id="addSource" style="margin-top: 10px;">+ Add Another Source</button>
+                            </div>
+
+                            <!-- Manual Source Input (hidden when auto-retrieve is enabled) -->
+                            <div id="synthesisManualSources">
+                                <div class="form-group">
+                                    <label>Source Documents *</label>
+                                    <div id="synthesisSourcesContainer">
+                                        <div class="synthesis-source">
+                                            <input type="text" class="input-field source-title" placeholder="Source 1 Title (e.g., Customer Survey)" required>
+                                            <textarea class="textarea-field source-content" rows="4" placeholder="Source 1 Content" required></textarea>
+                                        </div>
+                                        <div class="synthesis-source">
+                                            <input type="text" class="input-field source-title" placeholder="Source 2 Title (e.g., App Store Reviews)" required>
+                                            <textarea class="textarea-field source-content" rows="4" placeholder="Source 2 Content" required></textarea>
+                                        </div>
+                                        <div class="synthesis-source">
+                                            <input type="text" class="input-field source-title" placeholder="Source 3 Title (e.g., Support Tickets)">
+                                            <textarea class="textarea-field source-content" rows="4" placeholder="Source 3 Content (optional)"></textarea>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary" id="addSource" style="margin-top: 10px;">+ Add Another Source</button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="synthesisFocus">Synthesis Focus (Optional)</label>
@@ -254,43 +309,96 @@
                     <!-- Validation Agent -->
                     <div class="agent-content" id="validation-agent">
                         <div class="agent-header">
-                            <h3>✅ Validation Agent</h3>
-                            <p>Check consistency and identify discrepancies across documents</p>
+                            <h3>✅ Legal Validation Agent</h3>
+                            <p>Verify accuracy of legal content against Hong Kong ordinances and check legal compliance</p>
                         </div>
+
+                        <!-- Warning Banner -->
+                        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-size: 24px;">⚖️</span>
+                                <div>
+                                    <strong style="color: #856404; font-size: 16px;">Legal Content Validation Only</strong>
+                                    <p style="margin: 8px 0 0 0; color: #856404; line-height: 1.5;">
+                                        This agent validates <strong>legal content</strong> (policies, contracts, legal claims) against Hong Kong ordinances.
+                                        <br><strong>Not suitable for:</strong> Financial reports, business data, or non-legal content.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- What to Validate Section -->
+                        <div style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                            <strong style="color: #1976D2;">✓ Good Content to Validate:</strong>
+                            <ul style="margin: 10px 0 0 20px; line-height: 1.8; color: #1565C0;">
+                                <li><strong>Employee Handbooks</strong> - Check compliance with Employment Ordinance</li>
+                                <li><strong>Privacy Policies</strong> - Verify against PDPO (Personal Data Privacy Ordinance)</li>
+                                <li><strong>Contract Clauses</strong> - Validate legal accuracy of agreements</li>
+                                <li><strong>Legal Claims</strong> - Check statements about HK law are correct</li>
+                                <li><strong>Compliance Documents</strong> - Verify regulatory compliance</li>
+                            </ul>
+                        </div>
+
                         <form id="validationAgentForm" class="form">
                             <div class="form-group">
-                                <label>Documents to Validate *</label>
+                                <label>Legal Content to Validate *</label>
+                                <small class="form-hint" style="display: block; margin-bottom: 10px; color: #666;">
+                                    📝 Enter legal content (policies, contracts, legal claims) to check against HK ordinances
+                                </small>
                                 <div id="validationDocsContainer">
                                     <div class="validation-doc">
-                                        <input type="text" class="input-field doc-title" placeholder="Document 1 Title (e.g., Employee Handbook)" required>
-                                        <textarea class="textarea-field doc-content" rows="4" placeholder="Document 1 Content" required></textarea>
+                                        <input type="text" class="input-field doc-title" placeholder="Document Title (e.g., Employee Leave Policy)" required>
+                                        <textarea class="textarea-field doc-content" rows="6" placeholder="Example: Employees are entitled to 7 days of annual leave after 12 months of service. Leave must be approved by supervisor 2 weeks in advance. Unused leave expires annually." required></textarea>
                                     </div>
-                                    <div class="validation-doc">
-                                        <input type="text" class="input-field doc-title" placeholder="Document 2 Title (e.g., HR Website)" required>
-                                        <textarea class="textarea-field doc-content" rows="4" placeholder="Document 2 Content" required></textarea>
-                                    </div>
-                                    <div class="validation-doc">
-                                        <input type="text" class="input-field doc-title" placeholder="Document 3 Title (e.g., Offer Letter)">
-                                        <textarea class="textarea-field doc-content" rows="4" placeholder="Document 3 Content (optional)"></textarea>
+                                    <div class="validation-doc" style="display: none;">
+                                        <input type="text" class="input-field doc-title" placeholder="Document 2 Title (Optional)">
+                                        <textarea class="textarea-field doc-content" rows="6" placeholder="Document 2 Content (optional)"></textarea>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-secondary" id="addValidationDoc" style="margin-top: 10px;">+ Add Another Document</button>
                             </div>
+
+                            <!-- Legal Examples -->
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                <strong style="color: #495057;">💡 Example Legal Content:</strong>
+                                <div style="margin-top: 10px; font-family: monospace; font-size: 13px; line-height: 1.6; color: #495057;">
+                                    <details style="margin-bottom: 8px;">
+                                        <summary style="cursor: pointer; color: #2196F3; font-weight: 500;">▶ Privacy Policy Clause</summary>
+                                        <div style="background: white; padding: 10px; margin-top: 5px; border-radius: 4px;">
+                                            "We retain personal data for 7 years as required by Hong Kong law. Data is stored securely and only accessed by authorized personnel."
+                                        </div>
+                                    </details>
+                                    <details style="margin-bottom: 8px;">
+                                        <summary style="cursor: pointer; color: #2196F3; font-weight: 500;">▶ Employment Contract Clause</summary>
+                                        <div style="background: white; padding: 10px; margin-top: 5px; border-radius: 4px;">
+                                            "Employee is entitled to statutory holidays, 7 days annual leave after 12 months, and sick leave as per Employment Ordinance."
+                                        </div>
+                                    </details>
+                                    <details>
+                                        <summary style="cursor: pointer; color: #2196F3; font-weight: 500;">▶ Director Duties Statement</summary>
+                                        <div style="background: white; padding: 10px; margin-top: 5px; border-radius: 4px;">
+                                            "Company directors must act in good faith, exercise reasonable care and skill, and avoid conflicts of interest under Cap. 622."
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label for="validationFocus">Validation Focus (Optional)</label>
                                 <input
                                     type="text"
                                     id="validationFocus"
                                     class="input-field"
-                                    placeholder="Example: Check for inconsistencies in vacation policy"
+                                    placeholder="Example: Check compliance with Employment Ordinance (Cap. 57)"
                                 >
-                                <small class="form-hint">💡 Tip: What should be validated? (e.g., "policy consistency", "data accuracy")</small>
+                                <small class="form-hint">💡 Specify which ordinance or aspect to focus on (e.g., "PDPO compliance", "Cap. 622 accuracy")</small>
                             </div>
+
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary" id="validationAgentBtn">
-                                    <span class="btn-text">✓ Validate</span>
+                                    <span class="btn-text">⚖️ Validate Legal Content</span>
                                     <span class="btn-loading" style="display: none;">
-                                        <span class="spinner"></span> Validating...
+                                        <span class="spinner"></span> Validating against HK ordinances...
                                     </span>
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="clearValidation">Clear</button>

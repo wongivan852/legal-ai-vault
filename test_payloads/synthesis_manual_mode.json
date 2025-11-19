@@ -1,0 +1,20 @@
+{
+  "task": {
+    "task_type": "synthesis",
+    "sources": [
+      {
+        "title": "Q3 2024 Sales Report",
+        "content": "Total revenue reached $4.2M in Q3 2024, representing a 28% increase year-over-year. The APAC region contributed $2.1M (50% of total), Europe $1.3M (31%), and North America $800K (19%). New product line launched in August generated $600K in first month."
+      },
+      {
+        "title": "Customer Feedback Survey",
+        "content": "Customer satisfaction scores: Product quality 4.5/5, Customer service 4.7/5, Delivery speed 4.2/5. Top requests: Mobile app (67%), International shipping (54%), Loyalty program (48%). Net Promoter Score increased from 42 to 58."
+      },
+      {
+        "title": "Market Analysis Report",
+        "content": "Market share grew from 12% to 15% in Q3. Main competitor reduced prices by 10%, but we maintained premium positioning. Industry growth rate 8% annually. Opportunity identified in Southeast Asian markets with 200% projected growth."
+      }
+    ],
+    "focus": "Create executive summary with strategic recommendations"
+  }
+}
