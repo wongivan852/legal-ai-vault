@@ -413,35 +413,303 @@
             <div class="tab-content" id="workflows-tab">
                 <div class="panel">
                     <h2>🔄 Multi-Agent Workflows</h2>
-                    <p class="panel-desc">Pre-built workflows orchestrating multiple agents</p>
+                    <p class="panel-desc">Orchestrated multi-step processes using multiple AI agents</p>
 
-                    <div style="margin-top: 20px;">
-                        <h3>Available Workflows</h3>
-                        <div class="quick-links">
-                            <div class="link-card">
-                                <strong>👥 HR Onboarding</strong>
-                                <p>Complete employee onboarding with personalized guides</p>
+                    <!-- Workflow Sub-Tabs -->
+                    <div class="agent-tabs">
+                        <button class="agent-tab-btn active" data-workflow="hr_onboarding">👥 HR Onboarding</button>
+                        <button class="agent-tab-btn" data-workflow="cs_ticket">💬 CS Ticket</button>
+                        <button class="agent-tab-btn" data-workflow="legal_compliance">⚖️ Legal Compliance</button>
+                        <button class="agent-tab-btn" data-workflow="simple_qa">💡 Q&A Validation</button>
+                        <button class="agent-tab-btn" data-workflow="multi_research">🔍 Multi-Research</button>
+                        <button class="agent-tab-btn" data-workflow="builder">🛠️ Workflow Builder</button>
+                    </div>
+
+                    <!-- HR Onboarding Workflow -->
+                    <div class="agent-content active" id="workflow-hr_onboarding">
+                        <div class="agent-header">
+                            <h3>👥 HR Employee Onboarding Workflow</h3>
+                            <p>3-step workflow: HR Policy → Analysis → Personalized Guide</p>
+                        </div>
+                        <form id="hrOnboardingForm" class="form">
+                            <div class="form-group">
+                                <label for="onboardingEmployeeName">Employee Name</label>
+                                <input type="text" id="onboardingEmployeeName" class="input-field" placeholder="e.g., John Doe">
                             </div>
-                            <div class="link-card">
-                                <strong>💬 CS Ticket Response</strong>
-                                <p>Intelligent ticket handling with sentiment analysis</p>
+                            <div class="form-group">
+                                <label for="onboardingRole">Role/Position</label>
+                                <input type="text" id="onboardingRole" class="input-field" placeholder="e.g., Software Engineer">
                             </div>
-                            <div class="link-card">
-                                <strong>⚖️ Legal-HR Compliance</strong>
-                                <p>Cross-domain compliance checking</p>
+                            <div class="form-group">
+                                <label for="onboardingQuestion">Onboarding Question (Optional)</label>
+                                <textarea id="onboardingQuestion" class="textarea-field" rows="3" placeholder="What are the key onboarding steps for a new employee?"></textarea>
+                                <small class="form-hint">Leave blank for general onboarding information</small>
                             </div>
-                            <div class="link-card">
-                                <strong>💡 Simple Q&A</strong>
-                                <p>Question answering with validation</p>
+                            <div class="form-group">
+                                <label for="onboardingPolicies">HR Policies (Optional)</label>
+                                <textarea id="onboardingPolicies" class="textarea-field" rows="5" placeholder="Paste your HR policies here for more accurate guidance..."></textarea>
                             </div>
-                            <div class="link-card">
-                                <strong>🔍 Multi-Agent Research</strong>
-                                <p>Comprehensive multi-perspective analysis</p>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-text">🚀 Run Onboarding Workflow</span>
+                                    <span class="btn-loading" style="display: none;"><span class="spinner"></span> Running workflow...</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary clear-workflow">Clear</button>
+                            </div>
+                        </form>
+                        <div id="hrOnboardingResult" class="result-panel" style="display: none;"></div>
+                    </div>
+
+                    <!-- CS Ticket Workflow -->
+                    <div class="agent-content" id="workflow-cs_ticket">
+                        <div class="agent-header">
+                            <h3>💬 CS Ticket Response Workflow</h3>
+                            <p>3-step workflow: CS Response → Sentiment Analysis → Polished Reply</p>
+                        </div>
+                        <form id="csTicketForm" class="form">
+                            <div class="form-group">
+                                <label for="ticketCustomerName">Customer Name</label>
+                                <input type="text" id="ticketCustomerName" class="input-field" placeholder="e.g., Jane Smith">
+                            </div>
+                            <div class="form-group">
+                                <label for="ticketQuery">Customer Query *</label>
+                                <textarea id="ticketQuery" class="textarea-field" rows="4" required placeholder="How do I reset my password?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="ticketDocs">Support Documentation (Optional)</label>
+                                <textarea id="ticketDocs" class="textarea-field" rows="5" placeholder="Paste relevant support docs, FAQs, or troubleshooting guides..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-text">🎫 Run Ticket Workflow</span>
+                                    <span class="btn-loading" style="display: none;"><span class="spinner"></span> Running workflow...</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary clear-workflow">Clear</button>
+                            </div>
+                        </form>
+                        <div id="csTicketResult" class="result-panel" style="display: none;"></div>
+                    </div>
+
+                    <!-- Legal-HR Compliance Workflow -->
+                    <div class="agent-content" id="workflow-legal_compliance">
+                        <div class="agent-header">
+                            <h3>⚖️ Legal-HR Compliance Workflow</h3>
+                            <p>3-step workflow: Legal Research → Compliance Validation → Report</p>
+                        </div>
+                        <form id="legalComplianceForm" class="form">
+                            <div class="form-group">
+                                <label for="complianceArea">Compliance Area *</label>
+                                <input type="text" id="complianceArea" class="input-field" required placeholder="e.g., What are the legal requirements for employee leave policies in Hong Kong?">
+                                <small class="form-hint">What legal requirement are you checking compliance with?</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="compliancePolicyName">Policy Name *</label>
+                                <input type="text" id="compliancePolicyName" class="input-field" required placeholder="e.g., Annual Leave Policy">
+                            </div>
+                            <div class="form-group">
+                                <label for="compliancePolicyContent">Policy Content *</label>
+                                <textarea id="compliancePolicyContent" class="textarea-field" rows="8" required placeholder="Paste your HR policy content here&#10;&#10;Example: Employees receive 7 days annual leave after 12 months of service. Leave must be approved by manager 2 weeks in advance..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-text">⚖️ Run Compliance Check</span>
+                                    <span class="btn-loading" style="display: none;"><span class="spinner"></span> Running workflow...</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary clear-workflow">Clear</button>
+                            </div>
+                        </form>
+                        <div id="legalComplianceResult" class="result-panel" style="display: none;"></div>
+                    </div>
+
+                    <!-- Simple Q&A Workflow -->
+                    <div class="agent-content" id="workflow-simple_qa">
+                        <div class="agent-header">
+                            <h3>💡 Simple Q&A with Validation</h3>
+                            <p>2-step workflow: Legal Research → Answer Validation</p>
+                        </div>
+                        <form id="simpleQAForm" class="form">
+                            <div class="form-group">
+                                <label for="qaQuestion">Legal Question *</label>
+                                <textarea id="qaQuestion" class="textarea-field" rows="4" required placeholder="What are director duties under Companies Ordinance?"></textarea>
+                                <small class="form-hint">Ask any legal question - we'll research and validate the answer</small>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-text">❓ Ask & Validate</span>
+                                    <span class="btn-loading" style="display: none;"><span class="spinner"></span> Running workflow...</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary clear-workflow">Clear</button>
+                            </div>
+                        </form>
+                        <div id="simpleQAResult" class="result-panel" style="display: none;"></div>
+                    </div>
+
+                    <!-- Multi-Agent Research Workflow -->
+                    <div class="agent-content" id="workflow-multi_research">
+                        <div class="agent-header">
+                            <h3>🔍 Multi-Agent Research</h3>
+                            <p>5-step workflow: Legal + HR + CS Research → Analysis → Synthesis</p>
+                        </div>
+                        <form id="multiResearchForm" class="form">
+                            <div class="form-group">
+                                <label for="researchTopic">Research Topic *</label>
+                                <textarea id="researchTopic" class="textarea-field" rows="3" required placeholder="e.g., Remote work policies and their legal implications"></textarea>
+                                <small class="form-hint">We'll research this from Legal, HR, and CS perspectives</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="researchHRContext">HR Context (Optional)</label>
+                                <textarea id="researchHRContext" class="textarea-field" rows="4" placeholder="Current HR policies or context..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="researchCSContext">CS Context (Optional)</label>
+                                <textarea id="researchCSContext" class="textarea-field" rows="4" placeholder="Customer feedback or support context..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-text">🔬 Run Research Workflow</span>
+                                    <span class="btn-loading" style="display: none;"><span class="spinner"></span> Running workflow...</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary clear-workflow">Clear</button>
+                            </div>
+                        </form>
+                        <div id="multiResearchResult" class="result-panel" style="display: none;"></div>
+                    </div>
+
+                    <!-- Workflow Builder -->
+                    <div class="agent-content" id="workflow-builder">
+                        <div class="agent-header">
+                            <h3>🛠️ Workflow Builder - Create Custom Workflows</h3>
+                            <p>Build multi-agent workflows without coding - Drag, Drop, Configure!</p>
+                        </div>
+
+                        <!-- Builder Modes -->
+                        <div class="agent-tabs" style="margin-bottom: 20px;">
+                            <button class="agent-tab-btn active" data-builder-mode="create">➕ Create New</button>
+                            <button class="agent-tab-btn" data-builder-mode="manage">📋 Manage Workflows</button>
+                        </div>
+
+                        <!-- Create New Workflow Mode -->
+                        <div id="builder-create-mode" class="builder-mode active">
+                            <form id="workflowBuilderForm" class="form">
+                                <!-- Workflow Basic Info -->
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                    <h4 style="margin-top: 0; color: #333;">📝 Workflow Information</h4>
+
+                                    <div class="form-group">
+                                        <label for="builderWorkflowId">Workflow ID *</label>
+                                        <input type="text" id="builderWorkflowId" class="input-field" required
+                                               placeholder="e.g., my_custom_workflow"
+                                               pattern="[a-z0-9_]+"
+                                               title="Lowercase letters, numbers, and underscores only">
+                                        <small class="form-hint">Unique identifier (lowercase, underscores only)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="builderWorkflowName">Workflow Name *</label>
+                                        <input type="text" id="builderWorkflowName" class="input-field" required
+                                               placeholder="e.g., My Custom Legal Check">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="builderWorkflowDesc">Description</label>
+                                        <textarea id="builderWorkflowDesc" class="textarea-field" rows="2"
+                                                  placeholder="What does this workflow do?"></textarea>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="builderCategory">Category</label>
+                                            <select id="builderCategory" class="input-field">
+                                                <option value="general">General</option>
+                                                <option value="legal">Legal</option>
+                                                <option value="hr">HR</option>
+                                                <option value="cs">Customer Service</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="builderTags">Tags (comma-separated)</label>
+                                            <input type="text" id="builderTags" class="input-field"
+                                                   placeholder="e.g., compliance, validation, legal">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Workflow Steps Builder -->
+                                <div style="background: #fff; border: 2px solid #e0e0e0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                        <h4 style="margin: 0; color: #333;">🔗 Workflow Steps</h4>
+                                        <button type="button" id="addWorkflowStep" class="btn btn-secondary" style="font-size: 14px;">
+                                            ➕ Add Step
+                                        </button>
+                                    </div>
+
+                                    <div id="workflowStepsContainer">
+                                        <!-- Steps will be added here dynamically -->
+                                    </div>
+
+                                    <div id="noStepsMessage" style="text-align: center; padding: 40px; color: #999;">
+                                        <p style="font-size: 18px;">📭 No steps yet</p>
+                                        <p>Click "Add Step" to build your workflow</p>
+                                    </div>
+                                </div>
+
+                                <!-- Input Schema Builder -->
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                        <h4 style="margin: 0; color: #333;">📥 Input Fields (What the user provides)</h4>
+                                        <button type="button" id="addInputField" class="btn btn-secondary" style="font-size: 14px;">
+                                            ➕ Add Input Field
+                                        </button>
+                                    </div>
+
+                                    <div id="inputFieldsContainer">
+                                        <!-- Input fields will be added here -->
+                                    </div>
+
+                                    <div id="noInputMessage" style="text-align: center; padding: 20px; color: #999; font-size: 14px;">
+                                        No input fields defined yet. Click "Add Input Field" to define user inputs.
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary" id="saveWorkflowBtn">
+                                        <span class="btn-text">💾 Create Workflow</span>
+                                        <span class="btn-loading" style="display: none;"><span class="spinner"></span> Creating...</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="clearBuilder">🗑️ Clear All</button>
+                                    <button type="button" class="btn btn-secondary" id="previewWorkflow">👁️ Preview JSON</button>
+                                </div>
+                            </form>
+
+                            <!-- Preview Modal -->
+                            <div id="jsonPreviewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 40px;">
+                                <div style="background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                        <h3 style="margin: 0;">📄 Workflow JSON Preview</h3>
+                                        <button id="closePreview" class="btn btn-secondary">✖ Close</button>
+                                    </div>
+                                    <pre id="jsonPreviewContent" style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"></pre>
+                                </div>
                             </div>
                         </div>
-                        <p style="margin-top: 20px; text-align: center;">
-                            <a href="/docs#/Workflows" target="_blank" class="btn btn-primary">View Workflow API Documentation →</a>
-                        </p>
+
+                        <!-- Manage Workflows Mode -->
+                        <div id="builder-manage-mode" class="builder-mode" style="display: none;">
+                            <div style="margin-bottom: 20px;">
+                                <button id="refreshWorkflowList" class="btn btn-primary">🔄 Refresh List</button>
+                            </div>
+
+                            <div id="workflowListContainer">
+                                <p style="text-align: center; color: #999; padding: 40px;">
+                                    Click "Refresh List" to load workflows
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Result Messages -->
+                        <div id="builderResult" class="result-panel" style="display: none; margin-top: 20px;"></div>
                     </div>
                 </div>
             </div>
@@ -570,5 +838,7 @@
     </div>
 
     <script src="static/js/app.js"></script>
+    <script src="static/js/workflow-builder.js"></script>
+    <script src="static/js/custom-workflows.js"></script>
 </body>
 </html>

@@ -20,6 +20,7 @@ from services.rag_service import RAGService
 from database import init_db, get_db
 from qdrant_client import QdrantClient
 from routes import agents as agent_routes
+from routes import workflows as workflow_routes
 
 # Configure logging
 logging.basicConfig(
@@ -52,6 +53,9 @@ app.add_middleware(
 
 # Include agent routes
 app.include_router(agent_routes.router)
+
+# Include workflow routes
+app.include_router(workflow_routes.router)
 
 # Initialize services
 ollama_service = OllamaService()

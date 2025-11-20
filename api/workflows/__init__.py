@@ -1,16 +1,10 @@
 """
 Workflows Package
-Pre-built multi-agent workflows and workflow utilities
+
+Multi-agent workflow orchestration system.
 """
 
-from workflows.reference_workflows import (
-    register_reference_workflows,
-    get_workflow_examples,
-    get_workflow_descriptions
-)
+from workflows.workflow_engine import Workflow, WorkflowStep, WorkflowRegistry
+from workflows.workflow_definitions import get_all_workflows
 
-__all__ = [
-    "register_reference_workflows",
-    "get_workflow_examples",
-    "get_workflow_descriptions"
-]
+__all__ = ["Workflow", "WorkflowStep", "WorkflowRegistry", "get_all_workflows"]

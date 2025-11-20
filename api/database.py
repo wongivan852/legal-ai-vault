@@ -47,6 +47,6 @@ def get_db():
 def init_db():
     """Initialize database tables"""
     # Import models to register them with Base
-    from models import HKLegalDocument, HKLegalSection
+    from models import HKLegalDocument, HKLegalSection, CustomWorkflow
 
     Base.metadata.create_all(bind=engine)

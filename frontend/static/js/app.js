@@ -882,3 +882,407 @@ function formatDuration(ms) {
     if (ms < 1000) return `${ms}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
 }
+
+// ==========================================
+// WORKFLOW TAB SWITCHING
+// ==========================================
+
+// Initialize workflow tab switching (called on DOM ready)
+function initializeWorkflowTabs() {
+    // Handle workflow tab switching
+    document.querySelectorAll('[data-workflow]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const workflowId = this.getAttribute('data-workflow');
+
+            // Update button states within the same tab group
+            const tabGroup = this.closest('.agent-tabs');
+            if (tabGroup) {
+                tabGroup.querySelectorAll('[data-workflow]').forEach(b => b.classList.remove('active'));
+            }
+            this.classList.add('active');
+
+            // Update workflow content visibility
+            const parentPanel = this.closest('.panel');
+            if (parentPanel) {
+                parentPanel.querySelectorAll('[id^="workflow-"]').forEach(content => {
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById(`workflow-${workflowId}`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            }
+        });
+    });
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initializeWorkflowTabs);
+
+// ==========================================
+// WORKFLOW EXECUTION FUNCTIONS
+// ==========================================
+
+// Show loading state on button
+function showLoading(buttonElement) {
+    if (!buttonElement) return;
+
+    buttonElement.disabled = true;
+    buttonElement.dataset.originalText = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<span class="spinner"></span> Processing Workflow...';
+
+    // Show extended timeout message after 15 seconds
+    buttonElement.dataset.timeoutId = setTimeout(() => {
+        buttonElement.innerHTML = '<span class="spinner"></span> Still processing... (Workflows may take 2-4 minutes)';
+    }, 15000);
+}
+
+// Hide loading state on button
+function hideLoading(buttonElement) {
+    if (!buttonElement) return;
+
+    buttonElement.disabled = false;
+    buttonElement.innerHTML = buttonElement.dataset.originalText || 'Run Workflow';
+
+    // Clear timeout
+    if (buttonElement.dataset.timeoutId) {
+        clearTimeout(parseInt(buttonElement.dataset.timeoutId));
+        delete buttonElement.dataset.timeoutId;
+    }
+}
+
+// Display error in result panel
+function displayError(resultElementId, errorMessage) {
+    const resultDiv = document.getElementById(resultElementId);
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+        <div class="result-header">
+            <h3>❌ Workflow Error</h3>
+        </div>
+        <div class="result-content" style="background: #dc354520; border-left: 4px solid #dc3545; padding: 15px; border-radius: 4px;">
+            <strong style="color: #dc3545;">Error:</strong>
+            <p style="margin: 10px 0 0 0;">${escapeHtml(errorMessage)}</p>
+        </div>
+    `;
+    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Escape HTML for safe display
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Format markdown-like text for better display
+function formatMarkdown(text) {
+    if (!text) return '';
+
+    // Convert markdown-style formatting to HTML
+    let formatted = String(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')              // Italic
+        .replace(/^### (.*$)/gim, '<h4>$1</h4>')          // Headers
+        .replace(/^## (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^# (.*$)/gim, '<h2>$1</h2>')
+        .replace(/\n/g, '<br>');                           // Line breaks
+
+    return `<div style="white-space: normal; line-height: 1.6;">${formatted}</div>`;
+}
+
+// Format validation results from workflow execution
+function formatValidationWorkflowResult(result) {
+    const resultEmoji = result.validation_result === 'passed' ? '✅' :
+                       result.validation_result === 'partial' ? '⚠️' : '❌';
+    const resultColor = result.validation_result === 'passed' ? '#28a745' :
+                       result.validation_result === 'partial' ? '#ffc107' : '#dc3545';
+
+    let html = `
+        <div style="background: ${resultColor}20; border-left: 4px solid ${resultColor}; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: ${resultColor};">${resultEmoji} ${result.validation_result.toUpperCase()}</h3>
+                <div style="font-size: 2em; font-weight: bold; color: ${resultColor};">${result.quality_score}/100</div>
+            </div>
+            <div style="color: #666; font-size: 0.9em;">
+                <strong>Validation Type:</strong> ${result.validation_type}
+            </div>
+        </div>
+    `;
+
+    // Show validation breakdown if details exist
+    if (result.details) {
+        html += `<h4 style="margin-top: 20px;">📊 Validation Breakdown:</h4>`;
+        html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">`;
+
+        const categories = ['accuracy', 'completeness', 'consistency'];
+        categories.forEach(category => {
+            if (result.details[category]) {
+                const detail = result.details[category];
+                const score = detail.quality_score || 0;
+                const resultText = detail.validation_result || 'unknown';
+                const categoryEmoji = category === 'accuracy' ? '🎯' :
+                                    category === 'completeness' ? '📋' : '🔄';
+                const scoreColor = score >= 80 ? '#28a745' : score >= 60 ? '#ffc107' : '#dc3545';
+
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 4px solid ${scoreColor};">
+                        <div style="font-weight: bold; margin-bottom: 5px;">${categoryEmoji} ${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+                        <div style="font-size: 1.5em; color: ${scoreColor}; margin: 5px 0;">${score}/100</div>
+                        <div style="color: #666; font-size: 0.85em; text-transform: capitalize;">${resultText}</div>
+                    </div>
+                `;
+            }
+        });
+
+        html += `</div>`;
+    }
+
+    // Issues section
+    if (result.issues && result.issues.length > 0) {
+        html += `<h4 style="margin-top: 20px;">⚠️ Issues Found (${result.issues.length}):</h4>`;
+        html += `<div style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">`;
+        html += `<ol style="margin: 0; padding-left: 20px;">`;
+
+        // Group issues by category if possible
+        const maxDisplay = 10; // Show max 10 issues initially
+        result.issues.slice(0, maxDisplay).forEach(issue => {
+            const issueText = typeof issue === 'string' ? escapeHtml(issue) : escapeHtml(issue.description || JSON.stringify(issue));
+            html += `<li style="margin-bottom: 8px; line-height: 1.5;">${issueText}</li>`;
+        });
+
+        if (result.issues.length > maxDisplay) {
+            html += `<li style="color: #666; font-style: italic;">... and ${result.issues.length - maxDisplay} more issues</li>`;
+        }
+
+        html += `</ol></div>`;
+    }
+
+    // Recommendations section
+    if (result.recommendations && result.recommendations.length > 0) {
+        html += `<h4 style="margin-top: 20px;">💡 Recommendations:</h4>`;
+        html += `<div style="background: #d1ecf1; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8;">`;
+        html += `<ul style="margin: 0; padding-left: 20px;">`;
+
+        result.recommendations.forEach(rec => {
+            const recText = typeof rec === 'string' ? escapeHtml(rec) : escapeHtml(rec.description || JSON.stringify(rec));
+            html += `<li style="margin-bottom: 8px; line-height: 1.5;">${recText}</li>`;
+        });
+
+        html += `</ul></div>`;
+    }
+
+    // Collapsible detailed results
+    if (result.details) {
+        html += `
+            <details style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                <summary style="cursor: pointer; font-weight: bold; margin-bottom: 10px;">🔍 View Detailed Validation Results</summary>
+                <pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto; margin-top: 10px;">${JSON.stringify(result.details, null, 2)}</pre>
+            </details>
+        `;
+    }
+
+    return html;
+}
+
+// Generic workflow execution function
+async function executeWorkflow(workflowId, inputData, resultElementId, buttonElement) {
+    try {
+        showLoading(buttonElement);
+
+        // Show result panel with "Processing..." message
+        const resultDiv = document.getElementById(resultElementId);
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="result-header">
+                <h3>🔄 Processing Workflow...</h3>
+            </div>
+            <div class="result-content" style="text-align: center; padding: 40px;">
+                <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+                <p style="color: #666;">Executing multi-agent workflow...</p>
+                <p style="color: #999; font-size: 0.9em; margin-top: 10px;">This may take 2-4 minutes</p>
+            </div>
+        `;
+
+        const response = await fetch(`/api/workflows/${workflowId}/execute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: inputData })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        displayWorkflowResult(data, resultElementId);
+
+    } catch (error) {
+        displayError(resultElementId, error.message);
+    } finally {
+        hideLoading(buttonElement);
+    }
+}
+
+// Display workflow results with progress tracking
+function displayWorkflowResult(data, resultElementId) {
+    const resultDiv = document.getElementById(resultElementId);
+    resultDiv.style.display = 'block';
+
+    let html = '<div class="result-header"><h3>🔄 Workflow Results</h3></div>';
+
+    // Workflow status
+    const statusIcon = data.status === 'completed' ? '✅' : '❌';
+    const statusColor = data.status === 'completed' ? '#28a745' : '#dc3545';
+
+    html += `<div style="background: ${statusColor}20; border-left: 4px solid ${statusColor}; padding: 15px; margin-bottom: 20px; border-radius: 4px;">`;
+    html += `<strong style="color: ${statusColor};">${statusIcon} Workflow Status: ${data.status.toUpperCase()}</strong>`;
+    if (data.execution_time) {
+        html += `<p style="margin: 5px 0 0 0; color: #666;">Total execution time: ${data.execution_time}s</p>`;
+    }
+    html += `</div>`;
+
+    // Step-by-step results
+    if (data.steps && data.steps.length > 0) {
+        html += `<h4>📋 Execution Steps:</h4>`;
+
+        data.steps.forEach((step, index) => {
+            const stepNumber = index + 1;
+            const stepIcon = step.status === 'completed' ? '✅' : step.status === 'failed' ? '❌' : '⏳';
+            const stepColor = step.status === 'completed' ? '#28a745' : step.status === 'failed' ? '#dc3545' : '#ffc107';
+
+            html += `<div style="background: #f8f9fa; border-left: 4px solid ${stepColor}; padding: 15px; margin-bottom: 15px; border-radius: 4px;">`;
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
+            html += `<strong>${stepIcon} Step ${stepNumber}: ${step.name}</strong>`;
+            if (step.execution_time) {
+                html += `<span style="color: #666; font-size: 0.9em;">${step.execution_time}s</span>`;
+            }
+            html += `</div>`;
+
+            html += `<p style="color: #666; margin: 5px 0;"><em>${step.description}</em></p>`;
+            html += `<p style="margin: 5px 0; color: #666;"><strong>Agent:</strong> ${step.agent}</p>`;
+
+            if (step.error) {
+                html += `<div style="background: #fff; padding: 10px; border-radius: 4px; margin-top: 10px;">`;
+                html += `<strong style="color: #dc3545;">Error:</strong> ${escapeHtml(step.error)}`;
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+        });
+    }
+
+    // Final result
+    if (data.final_result) {
+        html += `<h4>🎯 Final Result:</h4>`;
+        html += `<div class="result-content">`;
+
+        if (typeof data.final_result === 'object') {
+            // Check if this is a validation result
+            if (data.final_result.agent === 'validation' && data.final_result.validation_result) {
+                html += formatValidationWorkflowResult(data.final_result);
+            }
+            // Handle structured results
+            else if (data.final_result.synthesized_output) {
+                html += formatMarkdown(data.final_result.synthesized_output);
+            } else if (data.final_result.answer) {
+                html += formatMarkdown(data.final_result.answer);
+            } else {
+                html += `<pre>${JSON.stringify(data.final_result, null, 2)}</pre>`;
+            }
+        } else {
+            html += formatMarkdown(String(data.final_result));
+        }
+
+        html += `</div>`;
+    }
+
+    resultDiv.innerHTML = html;
+    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ==========================================
+// WORKFLOW FORM HANDLERS
+// ==========================================
+
+// 1. HR Onboarding Workflow
+document.getElementById('hrOnboardingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputData = {
+        employee_name: document.getElementById('onboardingEmployeeName').value || undefined,
+        role: document.getElementById('onboardingRole').value || undefined,
+        employee_question: document.getElementById('onboardingQuestion').value || undefined,
+        hr_policies: document.getElementById('onboardingPolicies').value || undefined
+    };
+
+    await executeWorkflow('hr_onboarding', inputData, 'hrOnboardingResult', e.target.querySelector('.btn-primary'));
+});
+
+// 2. CS Ticket Workflow
+document.getElementById('csTicketForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputData = {
+        customer_name: document.getElementById('ticketCustomerName').value || undefined,
+        customer_query: document.getElementById('ticketQuery').value,
+        support_docs: document.getElementById('ticketDocs').value || undefined
+    };
+
+    await executeWorkflow('cs_ticket', inputData, 'csTicketResult', e.target.querySelector('.btn-primary'));
+});
+
+// 3. Legal-HR Compliance Workflow
+document.getElementById('legalComplianceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputData = {
+        compliance_area: document.getElementById('complianceArea').value,
+        policy_name: document.getElementById('compliancePolicyName').value,
+        policy_content: document.getElementById('compliancePolicyContent').value
+    };
+
+    await executeWorkflow('legal_hr_compliance', inputData, 'legalComplianceResult', e.target.querySelector('.btn-primary'));
+});
+
+// 4. Simple Q&A Workflow
+document.getElementById('simpleQAForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputData = {
+        question: document.getElementById('qaQuestion').value
+    };
+
+    await executeWorkflow('simple_qa', inputData, 'simpleQAResult', e.target.querySelector('.btn-primary'));
+});
+
+// 5. Multi-Agent Research Workflow
+document.getElementById('multiResearchForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputData = {
+        research_topic: document.getElementById('researchTopic').value,
+        hr_context: document.getElementById('researchHRContext').value || undefined,
+        cs_context: document.getElementById('researchCSContext').value || undefined
+    };
+
+    await executeWorkflow('multi_agent_research', inputData, 'multiResearchResult', e.target.querySelector('.btn-primary'));
+});
+
+// ==========================================
+// WORKFLOW CLEAR BUTTONS
+// ==========================================
+
+document.querySelectorAll('.clear-workflow').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const form = this.closest('form');
+        form.reset();
+
+        // Hide result panel
+        const resultDiv = form.nextElementSibling;
+        if (resultDiv && resultDiv.classList.contains('result-panel')) {
+            resultDiv.style.display = 'none';
+        }
+    });
+});
+
+console.log('✅ Workflow handlers initialized');

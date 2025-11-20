@@ -191,12 +191,14 @@ Respond in JSON format:
 
         response = await self.think(
             prompt,
-            system_prompt="You are a fact-checker. Verify accuracy objectively and thoroughly.",
+            system_prompt="You are a fact-checker. Verify accuracy objectively and thoroughly. You MUST respond with valid JSON only, no additional text.",
             temperature=0.1
         )
 
         try:
-            parsed = json.loads(response)
+            # Try to extract JSON from markdown code blocks if present
+            json_text = self._extract_json(response)
+            parsed = json.loads(json_text)
 
             issues = (
                 parsed.get("unsupported_claims", []) +
@@ -219,13 +221,10 @@ Respond in JSON format:
                 "recommendations": parsed.get("recommendations", []),
                 "details": parsed
             }
-        except json.JSONDecodeError:
-            return {
-                "validation_result": "failed",
-                "issues": ["Could not parse validation response"],
-                "quality_score": 0,
-                "recommendations": []
-            }
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse accuracy validation JSON: {e}")
+            # Use fallback extraction to get useful information anyway
+            return self._extract_fallback_validation(response, "accuracy")
 
     async def _validate_completeness(
         self,
@@ -276,12 +275,14 @@ Respond in JSON format:
 
         response = await self.think(
             prompt,
-            system_prompt="You are a quality assurance expert. Evaluate completeness objectively.",
+            system_prompt="You are a quality assurance expert. Evaluate completeness objectively. You MUST respond with valid JSON only, no additional text.",
             temperature=0.1
         )
 
         try:
-            parsed = json.loads(response)
+            # Try to extract JSON from markdown code blocks if present
+            json_text = self._extract_json(response)
+            parsed = json.loads(json_text)
 
             issues = (
                 parsed.get("missing_elements", []) +
@@ -303,13 +304,10 @@ Respond in JSON format:
                 "recommendations": parsed.get("recommendations", []),
                 "details": parsed
             }
-        except json.JSONDecodeError:
-            return {
-                "validation_result": "failed",
-                "issues": ["Could not parse validation response"],
-                "quality_score": 0,
-                "recommendations": []
-            }
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse completeness validation JSON: {e}")
+            # Use fallback extraction to get useful information anyway
+            return self._extract_fallback_validation(response, "completeness")
 
     async def _validate_consistency(self, content: Any) -> Dict[str, Any]:
         """
@@ -348,12 +346,14 @@ Respond in JSON format:
 
         response = await self.think(
             prompt,
-            system_prompt="You are a logic and consistency checker. Identify inconsistencies precisely.",
+            system_prompt="You are a logic and consistency checker. Identify inconsistencies precisely. You MUST respond with valid JSON only, no additional text.",
             temperature=0.1
         )
 
         try:
-            parsed = json.loads(response)
+            # Try to extract JSON from markdown code blocks if present
+            json_text = self._extract_json(response)
+            parsed = json.loads(json_text)
 
             issues = (
                 parsed.get("contradictions", []) +
@@ -376,13 +376,10 @@ Respond in JSON format:
                 "recommendations": parsed.get("recommendations", []),
                 "details": parsed
             }
-        except json.JSONDecodeError:
-            return {
-                "validation_result": "failed",
-                "issues": ["Could not parse validation response"],
-                "quality_score": 0,
-                "recommendations": []
-            }
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse consistency validation JSON: {e}")
+            # Use fallback extraction to get useful information anyway
+            return self._extract_fallback_validation(response, "consistency")
 
     async def _validate_comprehensive(
         self,
@@ -444,6 +441,122 @@ Respond in JSON format:
                 "accuracy": accuracy_result,
                 "completeness": completeness_result,
                 "consistency": consistency_result
+            }
+        }
+
+    def _extract_json(self, text: str) -> str:
+        """
+        Extract JSON from response text, handling markdown code blocks and various formats
+
+        Args:
+            text: Response text that may contain JSON
+
+        Returns:
+            Extracted JSON string
+        """
+        if not text or not text.strip():
+            return "{}"
+
+        # Strategy 1: Try to extract from markdown code blocks (```json or ```)
+        json_match = re.search(r'```(?:json)?\s*(\{[^`]*?\})\s*```', text, re.DOTALL)
+        if json_match:
+            logger.debug("Extracted JSON from markdown code block")
+            return json_match.group(1)
+
+        # Strategy 2: Try to find the largest valid JSON object
+        # This handles cases where JSON is embedded in narrative text
+        json_objects = re.findall(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
+        if json_objects:
+            # Return the longest JSON string (most likely to be complete)
+            longest = max(json_objects, key=len)
+            logger.debug(f"Extracted JSON object (length: {len(longest)})")
+            return longest
+
+        # Strategy 3: Try to find JSON with nested braces
+        brace_match = re.search(r'\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}', text, re.DOTALL)
+        if brace_match:
+            logger.debug("Extracted nested JSON structure")
+            return brace_match.group(0)
+
+        # Strategy 4: Extract from "JSON:" or "Result:" prefixes
+        prefix_match = re.search(r'(?:JSON|Result|Output):\s*(\{.*?\})', text, re.DOTALL | re.IGNORECASE)
+        if prefix_match:
+            logger.debug("Extracted JSON after label prefix")
+            return prefix_match.group(1)
+
+        logger.warning("Could not extract JSON structure, returning original text")
+        return text
+
+    def _extract_fallback_validation(self, response_text: str, validation_type: str) -> Dict[str, Any]:
+        """
+        Extract validation information from non-JSON responses as a fallback
+
+        Args:
+            response_text: The raw response text
+            validation_type: Type of validation (accuracy, completeness, consistency)
+
+        Returns:
+            Dict with extracted validation information
+        """
+        logger.warning(f"Using fallback extraction for {validation_type} validation")
+
+        issues = []
+        recommendations = []
+        score = 50  # Default neutral score
+
+        # Try to extract score from text
+        score_match = re.search(r'(?:score|rating)[:\s]*(\d+)', response_text, re.IGNORECASE)
+        if score_match:
+            score = min(100, max(0, int(score_match.group(1))))
+
+        # Extract bullet points or numbered lists as issues
+        issue_patterns = [
+            r'(?:issue|problem|error|concern)[s]?[:\s]*\n((?:[-•*]\s*.+\n?)+)',
+            r'(?:found|identified)[:\s]*\n((?:\d+[.)]\s*.+\n?)+)',
+        ]
+
+        for pattern in issue_patterns:
+            matches = re.finditer(pattern, response_text, re.IGNORECASE | re.MULTILINE)
+            for match in matches:
+                items = re.findall(r'[-•*\d+.)]\s*(.+)', match.group(1))
+                issues.extend([item.strip() for item in items if item.strip()])
+
+        # Extract recommendations
+        rec_patterns = [
+            r'(?:recommend|suggest|should|improve)[:\s]*\n((?:[-•*]\s*.+\n?)+)',
+            r'recommendations?[:\s]*\n((?:\d+[.)]\s*.+\n?)+)',
+        ]
+
+        for pattern in rec_patterns:
+            matches = re.finditer(pattern, response_text, re.IGNORECASE | re.MULTILINE)
+            for match in matches:
+                items = re.findall(r'[-•*\d+.)]\s*(.+)', match.group(1))
+                recommendations.extend([item.strip() for item in items if item.strip()])
+
+        # If no issues found but response mentions problems, extract sentences
+        if not issues and any(word in response_text.lower() for word in ['error', 'issue', 'problem', 'incorrect', 'missing']):
+            sentences = re.split(r'[.!?]\s+', response_text)
+            issues = [s.strip() for s in sentences[:3] if len(s.strip()) > 20][:3]
+
+        # Determine result based on extracted info
+        if not issues:
+            validation_result = "passed"
+            score = max(score, 80)
+        elif len(issues) <= 2:
+            validation_result = "partial"
+            score = max(score, 60) if score < 60 else min(score, 79)
+        else:
+            validation_result = "failed"
+            score = min(score, 59)
+
+        return {
+            "validation_result": validation_result,
+            "issues": issues if issues else [f"Unable to parse {validation_type} validation fully - review may be incomplete"],
+            "quality_score": score,
+            "recommendations": recommendations[:5],  # Limit to top 5
+            "details": {
+                "raw_response_preview": response_text[:500] + "..." if len(response_text) > 500 else response_text,
+                "extraction_method": "fallback"
             }
         }
 

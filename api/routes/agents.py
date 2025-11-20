@@ -22,11 +22,6 @@ from services.ollama_service import OllamaService
 from services.rag_service import RAGService
 from database import get_db
 from qdrant_client import QdrantClient
-from workflows import (
-    register_reference_workflows,
-    get_workflow_examples,
-    get_workflow_descriptions
-)
 from sqlalchemy.orm import Session
 import os
 
@@ -140,12 +135,7 @@ def get_agent_registry():
             if agent_info["agent"]:
                 _orchestrator.register_agent(agent_info["agent"])
 
-        # Register reference workflows
-        try:
-            register_reference_workflows(_orchestrator)
-            logger.info("Reference workflows registered successfully")
-        except Exception as e:
-            logger.error(f"Failed to register reference workflows: {e}", exc_info=True)
+        logger.info("Agent registry initialized")
 
     return _agent_registry, _orchestrator
 
@@ -408,60 +398,8 @@ async def get_workflow_info(workflow_name: str):
     )
 
 
-@router.get("/workflows/{workflow_name}/example")
-async def get_workflow_example(workflow_name: str):
-    """
-    Get example input data for a workflow
-
-    Args:
-        workflow_name: Name of the workflow
-
-    Returns:
-        Example input data and description
-
-    Example:
-        GET /api/agents/workflows/hr_onboarding/example
-        Returns example input data that can be used to test the workflow
-    """
-    examples = get_workflow_examples()
-    descriptions = get_workflow_descriptions()
-
-    if workflow_name not in examples:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No example available for workflow '{workflow_name}'"
-        )
-
-    return {
-        "workflow": workflow_name,
-        "description": descriptions.get(workflow_name, ""),
-        "example_input": examples[workflow_name],
-        "usage": f"POST /api/agents/workflows/{workflow_name}/execute with this data"
-    }
-
-
-@router.get("/workflows/examples/all")
-async def get_all_workflow_examples():
-    """
-    Get example input data for all workflows
-
-    Returns:
-        Dict mapping workflow names to example inputs and descriptions
-    """
-    examples = get_workflow_examples()
-    descriptions = get_workflow_descriptions()
-
-    return {
-        "workflows": {
-            name: {
-                "description": descriptions.get(name, ""),
-                "example_input": example,
-                "endpoint": f"/api/agents/workflows/{name}/execute"
-            }
-            for name, example in examples.items()
-        },
-        "total": len(examples)
-    }
+# Workflow examples and descriptions endpoints removed
+# Use the new workflow API at /api/workflows/ instead
 
 
 @router.get("/stats")

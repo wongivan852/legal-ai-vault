@@ -683,25 +683,27 @@ label {
 /* Agent Sub-Tabs */
 .agent-tabs {
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
     margin: 20px 0;
     padding: 8px;
     background: var(--bg-secondary);
     border-radius: var(--border-radius-sm);
-    overflow-x: auto;
+    justify-content: center;
 }
 
 .agent-tab-btn {
     background: transparent;
     border: 2px solid transparent;
-    padding: 12px 20px;
-    font-size: 0.9rem;
+    padding: 10px 16px;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
     transition: var(--transition);
     border-radius: var(--border-radius-sm);
     white-space: nowrap;
+    flex: 0 1 auto;
 }
 
 .agent-tab-btn:hover {
@@ -835,4 +837,17 @@ label {
     .models-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* Workflow Tags */
+.tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-right: 6px;
+    margin-bottom: 4px;
 }
