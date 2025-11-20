@@ -27,6 +27,7 @@ wheels/
 .env
 .env.local
 .env.*.local
+# Note: .env.production is tracked as a template (contains no secrets)
 
 # IDE
 .vscode/
@@ -56,6 +57,13 @@ postgres_data/
 qdrant_data/
 api_documents/
 api_logs/
+ollama_models/
+
+# SSL Certificates (never commit private keys!)
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+!nginx/ssl/README.md
 
 # OS
 Thumbs.db

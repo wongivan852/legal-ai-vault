@@ -1,28 +1,39 @@
 version: '3.8'
 
 services:
-  # Ollama service - uses your existing models
+  # Ollama service - GPU-accelerated LLM inference
+  # Optimized for Linux server with 4 NVIDIA GPUs
   ollama:
     image: ollama/ollama:latest
     container_name: legal-ai-ollama
     volumes:
-      # Mount your existing Ollama models (read-only for safety)
-      - /Users/wongivan/.ollama:/root/.ollama:ro
+      # Use environment variable for Ollama models path (Linux compatible)
+      # Default: /root/.ollama for Docker volume, or set OLLAMA_MODELS_PATH in .env
+      - ${OLLAMA_MODELS_PATH:-ollama_models}:/root/.ollama
     ports:
       - "11434:11434"
     restart: unless-stopped
     networks:
       - legal-ai-network
-    # GPU support (uncomment for NVIDIA GPUs on Linux)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
-    # Health check disabled - ollama container doesn't have curl
-    # Service is ready when port is listening
+    # GPU support - ENABLED for 4 NVIDIA GPUs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_COUNT:-all}  # Use all 4 GPUs or specify count in .env
+              capabilities: [gpu]
+    environment:
+      # GPU optimization settings
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    # Health check: Use nc (netcat) instead of curl
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/11434' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # PostgreSQL Database
   postgres:
@@ -30,12 +41,17 @@ services:
     container_name: legal-ai-postgres
     environment:
       POSTGRES_DB: legal_ai_vault
-      POSTGRES_USER: ${DB_USER:-legal_vault_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me_in_production}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Performance tuning for production
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-2GB}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-6GB}
+      POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-200}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5432:5432"
+      # Bind to all interfaces in production (use firewall for security)
+      - "${POSTGRES_PORT:-5432}:5432"
     restart: unless-stopped
     networks:
       - legal-ai-network
@@ -52,8 +68,9 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     ports:
-      - "127.0.0.1:6333:6333"
-      - "127.0.0.1:6334:6334"
+      # Expose for external access (secure with firewall/nginx)
+      - "${QDRANT_HTTP_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
     restart: unless-stopped
     networks:
       - legal-ai-network
@@ -68,25 +85,32 @@ services:
     build: ./api
     container_name: legal-ai-api
     environment:
-      # Database
-      DATABASE_URL: postgresql://${DB_USER:-legal_vault_user}:${DB_PASSWORD:-change_me_in_production}@postgres:5432/legal_ai_vault
+      # Database (NO DEFAULTS - must be set in .env)
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/legal_ai_vault
 
       # Vector Database
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
 
-      # Ollama connection (configured in .env file)
+      # Ollama connection - optimized for GPU server with llama3.3:70b
       OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.3:70b}
       OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}
 
-      # Security
-      JWT_SECRET: ${JWT_SECRET:-change_me_generate_with_openssl_rand_hex_32}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change_me_generate_with_openssl_rand_hex_32}
+      # Security (NO DEFAULTS - must be set in .env)
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+
+      # CORS Configuration
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8000}
 
       # Application
       DEBUG: ${DEBUG:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Performance settings for GPU server
+      WORKERS: ${API_WORKERS:-4}
+      MAX_CONCURRENT_REQUESTS: ${MAX_CONCURRENT_REQUESTS:-100}
     volumes:
       - ./api:/app
       - ./frontend:/app/frontend
@@ -94,7 +118,7 @@ services:
       - api_documents:/app/documents
       - api_logs:/app/logs
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       - postgres
       - qdrant
@@ -136,6 +160,13 @@ volumes:
     driver: local
   api_logs:
     driver: local
+  ollama_models:
+    driver: local
+    # For production, you can mount external storage here
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: /mnt/data/ollama_models
 
 networks:
   legal-ai-network:
