@@ -1,0 +1,35 @@
+{
+  "test_case_name": "Annual Leave Entitlement Inconsistencies",
+  "description": "Three documents with conflicting information about annual leave entitlements",
+  "expected_validation_result": "failed",
+  "expected_issues": [
+    "Inconsistent annual leave days: Employee Handbook states 14 days, HR Portal states 12 days, Employment Contract states 7 days",
+    "Conflicting eligibility criteria: Handbook requires 12 months service, Contract states immediate eligibility",
+    "Different calculation methods for pro-rata leave"
+  ],
+  "task": {
+    "task_type": "validation",
+    "validation_type": "consistency",
+    "documents": [
+      {
+        "title": "Employee Handbook - Leave Policy",
+        "source": "HR Department",
+        "date": "2024-01-15",
+        "content": "Annual Leave Entitlement:\n\nAll full-time employees are entitled to 14 days of paid annual leave per year. Part-time employees receive pro-rata annual leave based on their working hours.\n\nEligibility: Employees become eligible for annual leave after completing 12 months of continuous service. During the first year of employment, leave accrues monthly at a rate of 1.17 days per month.\n\nCarry Forward: Unused annual leave may be carried forward to the next year, up to a maximum of 5 days. Any leave exceeding this limit will be forfeited.\n\nScheduling: Annual leave must be requested at least 14 days in advance and is subject to management approval based on operational requirements."
+      },
+      {
+        "title": "HR Portal - Annual Leave Information",
+        "source": "Employee Self-Service System",
+        "date": "2024-03-20",
+        "content": "Annual Leave Policy:\n\nFull-time staff members receive 12 days of annual leave each year. This is the statutory minimum required under Hong Kong Employment Ordinance.\n\nLeave Calculation: Your annual leave is calculated based on your employment start date. For employees joining mid-year, leave is pro-rated based on the number of complete months worked.\n\nExample: If you join on July 1st, you will receive 6 days of leave for the remainder of the year (12 days ÷ 12 months × 6 months = 6 days).\n\nUnused Leave: All unused annual leave must be taken before the end of each leave year. Leave cannot be carried forward or paid out in lieu, except upon termination of employment."
+      },
+      {
+        "title": "Standard Employment Contract - Section 5",
+        "source": "Legal Department",
+        "date": "2023-11-08",
+        "content": "5. ANNUAL LEAVE\n\n5.1 The Employee shall be entitled to paid annual leave in accordance with the Employment Ordinance (Cap. 57). For the first year of employment, the Employee is entitled to 7 days of paid annual leave.\n\n5.2 Annual leave entitlement increases with length of service as follows:\n   - Year 1: 7 days\n   - Year 2: 7 days\n   - Year 3 onwards: Add 1 day per year of service, up to maximum of 14 days\n\n5.3 Annual leave may be taken at any time with the prior written consent of the Employer, which consent shall not be unreasonably withheld.\n\n5.4 The Employee is entitled to take annual leave immediately upon commencement of employment, with payment for leave calculated on a pro-rata basis if employment terminates before the leave year ends.\n\n5.5 Upon termination of employment, the Employee shall be entitled to payment in lieu of any untaken annual leave, calculated at the Employee's daily rate of pay."
+      }
+    ],
+    "focus": "Identify all inconsistencies and contradictions regarding annual leave entitlements, eligibility, calculation methods, and policies for unused leave across the three documents."
+  }
+}

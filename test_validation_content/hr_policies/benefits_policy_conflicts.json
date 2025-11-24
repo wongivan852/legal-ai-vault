@@ -1,0 +1,35 @@
+{
+  "test_case_name": "Employee Benefits Policy Conflicts",
+  "description": "Multiple HR documents with conflicting benefits information",
+  "expected_validation_result": "failed",
+  "expected_issues": [
+    "Medical insurance coverage differs: Benefits Guide states full family coverage, Website states employee only, Contract states employee plus spouse",
+    "MPF contribution rates don't match across documents",
+    "Dental benefit eligibility criteria conflict"
+  ],
+  "task": {
+    "task_type": "validation",
+    "validation_type": "consistency",
+    "documents": [
+      {
+        "title": "Employee Benefits Guide 2024",
+        "source": "HR Department",
+        "date": "2024-01-01",
+        "content": "COMPREHENSIVE BENEFITS PACKAGE\n\nMedical Insurance:\nAll permanent employees and their eligible family members are covered under our group medical insurance plan from day one of employment.\n\nCoverage includes:\n- Employee (100% company-paid)\n- Spouse (100% company-paid)\n- Dependent children up to age 25 (100% company-paid)\n- Parents over 60 (employee pays 50% of premium)\n\nAnnual Coverage Limits:\n- Outpatient: HK$50,000 per person\n- Inpatient: HK$500,000 per person\n- Maternity: HK$80,000 per person\n\nDental Insurance:\nAvailable to all employees after 6 months of service. Coverage includes:\n- Annual checkup and cleaning (100% covered)\n- Basic procedures (80% covered)\n- Major procedures (50% covered)\n- Annual limit: HK$15,000 per person\n\nMandatory Provident Fund (MPF):\nThe company contributes 10% of your monthly salary to your MPF account, and you contribute 5%. This exceeds the statutory minimum requirement and demonstrates our commitment to your retirement security.\n\nContributions are calculated on your total monthly salary including bonuses and allowances, up to the statutory maximum of HK$30,000.\n\nLife Insurance:\nAll employees are covered by group life insurance providing:\n- Death benefit: 48 months of basic salary\n- Permanent disability: 48 months of basic salary\n- Coverage begins on your first day of employment\n- No medical examination required\n\nPersonal Accident Insurance:\nCompany-paid coverage of HK$2,000,000 for accidental death or permanent disability, 24/7 worldwide coverage."
+      },
+      {
+        "title": "Company Website - Careers Page: Benefits",
+        "source": "Marketing/HR",
+        "date": "2024-02-15",
+        "content": "JOIN OUR TEAM - COMPETITIVE BENEFITS PACKAGE\n\nWe value our employees and offer an attractive benefits package:\n\n💼 Medical Coverage\nComprehensive medical insurance for all employees from day 1. The company pays 100% of premiums for employee coverage. Family members can be added at subsidized rates.\n\nOur medical plan provides:\n• Outpatient care up to HK$50,000 annually\n• Hospitalization coverage up to HK$500,000 per year\n• Specialist consultations\n• Diagnostic tests and procedures\n\n🦷 Dental Benefits\nDental coverage available after probation period (3 months). Includes preventive care, basic treatments, and major procedures with varying co-payment levels.\n\n💰 Retirement Savings\nWe contribute to your MPF account at the statutory rate of 5% of your monthly relevant income. Employee contributions are also 5% as required by law. \n\nTotal MPF contributions: 10% of salary (5% employer + 5% employee)\n\n🛡️ Insurance Protection\n• Group life insurance: 36 months salary coverage\n• Personal accident insurance: HK$1,500,000 coverage\n• Coverage starts from your employment start date\n\n📚 Learning & Development\nUp to HK$10,000 annually for professional development courses and certifications.\n\n🏖️ Work-Life Balance\n• Competitive annual leave\n• Birthday leave\n• Wellness programs\n• Employee assistance program\n\nFor more details about specific benefits, please refer to your employment contract or contact HR."
+      },
+      {
+        "title": "Standard Employment Contract - Benefits Schedule",
+        "source": "Legal Department",
+        "date": "2023-12-01",
+        "content": "APPENDIX B: EMPLOYEE BENEFITS\n\n1. MEDICAL INSURANCE\n\n1.1 The Employer shall provide group medical insurance coverage for the Employee and the Employee's spouse, with premiums fully paid by the Employer.\n\n1.2 Coverage for dependent children may be arranged at the Employee's expense, with the Employer facilitating enrollment through the group plan.\n\n1.3 Medical insurance coverage shall commence on the Employee's first day of employment and continue throughout the employment period.\n\n1.4 Annual benefit limits are:\n   a) Outpatient services: HK$50,000 per covered person\n   b) Inpatient/hospitalization: HK$500,000 per covered person\n   c) Maternity benefits: HK$100,000 per covered person\n\n2. DENTAL INSURANCE\n\n2.1 Dental insurance coverage is available to employees who have completed their probationary period (6 months).\n\n2.2 The Employer pays 100% of premiums for employee coverage. Family members may be enrolled at the Employee's expense.\n\n3. MANDATORY PROVIDENT FUND\n\n3.1 Both the Employer and Employee shall make mandatory contributions to the Employee's MPF account as required under the Mandatory Provident Fund Schemes Ordinance (Cap. 485).\n\n3.2 Contribution rates:\n   a) Employer contribution: 5% of monthly relevant income\n   b) Employee contribution: 5% of monthly relevant income\n   c) Subject to minimum and maximum relevant income levels as prescribed by law\n\n3.3 Contributions are calculated on basic monthly salary only and exclude bonuses, commissions, or other variable payments.\n\n4. LIFE INSURANCE\n\n4.1 The Employer provides group life insurance coverage equal to forty-eight (48) months of the Employee's basic monthly salary.\n\n4.2 Coverage includes death benefit and total permanent disability benefit.\n\n4.3 The Employee may designate beneficiaries by completing the required insurance forms.\n\n5. PERSONAL ACCIDENT INSURANCE\n\n5.1 Coverage amount: HK$2,000,000 for accidental death or permanent total disability\n\n5.2 Coverage applies 24 hours a day, worldwide\n\n5.3 Coverage commences on the first day of employment"
+      }
+    ],
+    "focus": "Identify all inconsistencies and discrepancies in medical insurance coverage, MPF contribution rates and calculation methods, dental insurance eligibility, and life insurance coverage amounts across the three documents."
+  }
+}

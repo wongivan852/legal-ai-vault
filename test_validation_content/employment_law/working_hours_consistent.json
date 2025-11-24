@@ -1,0 +1,31 @@
+{
+  "test_case_name": "Working Hours - Consistent Documentation",
+  "description": "Three documents with consistent information about working hours and overtime (positive test case)",
+  "expected_validation_result": "passed",
+  "expected_issues": [],
+  "task": {
+    "task_type": "validation",
+    "validation_type": "consistency",
+    "documents": [
+      {
+        "title": "Employee Handbook - Working Hours Policy",
+        "source": "HR Department",
+        "date": "2024-01-01",
+        "content": "WORKING HOURS AND OVERTIME\n\nStandard Working Hours:\nOur standard working week is 40 hours, typically structured as:\n- Monday to Friday: 9:00 AM to 6:00 PM (with 1 hour lunch break)\n- Total: 8 hours per day, 40 hours per week\n\nFlexible Working:\nDepartments may implement flexible working arrangements with core hours from 10:00 AM to 4:00 PM, allowing employees to adjust their start and end times within reason, subject to manager approval.\n\nOvertime:\nNon-exempt employees who work beyond 40 hours per week are entitled to overtime compensation at 1.5 times their regular hourly rate. All overtime must be pre-approved by department managers.\n\nExempt employees (managerial and professional staff) are not entitled to overtime pay but may be granted time off in lieu at the discretion of management.\n\nTime Recording:\nAll employees must accurately record their working hours using the company time tracking system. Failure to do so may result in delayed salary payments or disciplinary action.\n\nRest Days:\nEmployees are entitled to at least one rest day per week, typically Saturday or Sunday. When operational requirements necessitate work on a rest day, employees will receive a substitute rest day within the same month."
+      },
+      {
+        "title": "Employment Contract - Schedule of Terms",
+        "source": "Legal Department",
+        "date": "2024-01-01",
+        "content": "SCHEDULE A: TERMS AND CONDITIONS OF EMPLOYMENT\n\nHOURS OF WORK\n\n1. Normal Working Hours:\n   The Employee's normal working hours are forty (40) hours per week, distributed as follows:\n   - Working Days: Monday to Friday\n   - Working Hours: 9:00 AM to 6:00 PM\n   - Meal Break: 1 hour (unpaid), typically 12:00 PM to 1:00 PM or 1:00 PM to 2:00 PM\n\n2. Flexible Working Arrangements:\n   Subject to operational requirements and with prior approval from the Employee's immediate supervisor, the Employee may request flexible working hours. Core business hours are 10:00 AM to 4:00 PM, during which all employees must be available.\n\n3. Overtime:\n   For non-exempt employees: Overtime work exceeding 40 hours per week must be authorized in advance and will be compensated at 1.5 times the regular hourly rate.\n   \n   For exempt employees: Managerial and professional employees are not entitled to overtime compensation but may be granted compensatory time off at management's discretion.\n\n4. Rest Days:\n   The Employee is entitled to not less than one rest day in every period of seven days. The regular rest day is Saturday or Sunday unless otherwise notified."
+      },
+      {
+        "title": "HR Policy Guide - Attendance and Hours",
+        "source": "HR Department",
+        "date": "2024-01-01",
+        "content": "ATTENDANCE AND WORKING HOURS POLICY\n\n1. Standard Schedule\nFull-time employees work 40 hours per week on the following schedule:\n- Days: Monday through Friday\n- Hours: 9:00 AM to 6:00 PM (8 hours per day)\n- Lunch: 1-hour unpaid break\n\n2. Flexibility Options\nWe offer flexible working arrangements where business needs permit:\n- Core Hours: 10:00 AM - 4:00 PM (must be present)\n- Flexible Start: Between 8:00 AM - 10:00 AM\n- Flexible End: Between 4:00 PM - 7:00 PM\n- Requires manager approval\n\n3. Overtime Policy\nNon-Exempt Staff:\n- Overtime is hours worked beyond 40 per week\n- Paid at 1.5x regular hourly rate\n- Must be pre-approved by manager\n- Recorded in time tracking system\n\nExempt Staff:\n- Management and professional roles\n- Not eligible for overtime pay\n- May receive time off in lieu (manager's discretion)\n\n4. Weekly Rest Day\nAll employees receive at least one rest day per seven-day period, normally Saturday or Sunday. If required to work on a designated rest day, a substitute rest day will be provided within the same month.\n\n5. Time Tracking\nEmployees must clock in/out daily using the company's electronic time tracking system. Accurate time records are essential for payroll processing."
+      }
+    ],
+    "focus": "Verify consistency across all documents regarding working hours, overtime policies, rest days, and flexible working arrangements. This should pass validation as all documents are aligned."
+  }
+}

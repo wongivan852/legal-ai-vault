@@ -1,0 +1,35 @@
+{
+  "test_case_name": "Termination Notice Period Conflicts",
+  "description": "Documents showing different notice periods for employment termination",
+  "expected_validation_result": "failed",
+  "expected_issues": [
+    "Notice period varies: Policy Manual states 3 months, Offer Letter states 1 month, Contract states 2 months",
+    "Probation period notice differs between documents",
+    "Payment in lieu of notice terms are contradictory"
+  ],
+  "task": {
+    "task_type": "validation",
+    "validation_type": "consistency",
+    "documents": [
+      {
+        "title": "Company Policy Manual - Termination Procedures",
+        "source": "HR Department",
+        "date": "2024-02-01",
+        "content": "TERMINATION OF EMPLOYMENT\n\nNotice Requirements:\n\nManagement Level Employees: Either party may terminate the employment relationship by providing three (3) months' written notice to the other party. The Company reserves the right to make payment in lieu of notice at its sole discretion.\n\nGeneral Staff: A notice period of one (1) month is required from either party. During the notice period, employees are expected to continue performing their duties diligently and assist with transition activities.\n\nProbationary Period: During the probationary period (first 3 months of employment), either party may terminate employment with 7 days' notice or payment in lieu thereof.\n\nImmediate Termination: The Company reserves the right to terminate employment immediately without notice or payment in lieu of notice in cases of gross misconduct, including but not limited to theft, fraud, violence, or serious breach of company policies.\n\nGarden Leave: The Company may elect to place an employee on garden leave during the notice period, during which the employee will continue to receive full salary and benefits but will not be required to attend work or perform duties."
+      },
+      {
+        "title": "Offer Letter - Manager Position",
+        "source": "Hiring Department",
+        "date": "2023-12-15",
+        "content": "Dear [Candidate Name],\n\nWe are pleased to offer you the position of Marketing Manager at our company.\n\nStart Date: January 15, 2024\n\nProbation Period: Your employment will be subject to a probationary period of 6 months. During this period, either party may terminate the employment with one week's written notice.\n\nNotice Period: Following successful completion of the probation period, either party wishing to terminate employment must provide one (1) month's written notice. The Company may choose to pay one month's salary in lieu of notice.\n\nSeverance: In the event of redundancy, you will be entitled to severance pay in accordance with the Employment Ordinance, subject to meeting the eligibility requirements.\n\nThis offer is contingent upon satisfactory reference checks and verification of your qualifications.\n\nPlease sign and return this letter by December 22, 2023 to confirm your acceptance.\n\nWe look forward to welcoming you to our team.\n\nSincerely,\nHuman Resources Department"
+      },
+      {
+        "title": "Employment Contract - Article 8",
+        "source": "Legal Department",
+        "date": "2024-01-10",
+        "content": "ARTICLE 8: TERMINATION\n\n8.1 NOTICE PERIOD\nEither party may terminate this Agreement by giving the other party not less than two (2) months' prior written notice in writing, or payment of two months' salary in lieu of notice.\n\n8.2 PROBATIONARY PERIOD\nDuring the probationary period of three (3) months from the Commencement Date, either party may terminate this Agreement by giving not less than one (1) month's written notice or one month's salary in lieu of notice.\n\n8.3 TERMINATION WITHOUT NOTICE\nThe Employer may terminate this Agreement summarily without notice and without payment in lieu of notice if the Employee:\na) Is guilty of serious misconduct\nb) Commits any serious or persistent breach of this Agreement\nc) Is convicted of any criminal offence (other than minor traffic violations)\nd) Becomes bankrupt or enters into any composition with creditors\n\n8.4 PAYMENT IN LIEU OF NOTICE\nThe Employer may at its absolute discretion elect to pay the Employee salary in lieu of notice. Such payment shall be calculated based on the Employee's basic monthly salary and shall be made within seven (7) days of termination.\n\n8.5 RETURN OF PROPERTY\nUpon termination of employment for whatever reason, the Employee shall immediately return to the Employer all property, documents, and materials belonging to the Employer, including but not limited to keys, access cards, mobile phones, laptops, and confidential information."
+      }
+    ],
+    "focus": "Analyze and identify all discrepancies in termination notice periods, probation period duration and notice requirements, and payment in lieu of notice provisions across all documents."
+  }
+}
